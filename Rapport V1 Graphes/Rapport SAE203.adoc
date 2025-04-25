@@ -1,0 +1,41 @@
+= SAE S2.02 -- Rapport graphes
+Roty Clément <clement.roty.etu@univ-lille.fr>; Sergheraert Timothée <timothee.sergheraert.etu@univ-lille.fr>; Lemaire Mano <mano.lemaire.etu@univ-lille.fr>
+25 avril 2025 - Version 1.0
+:title-logo-image: image:logo.png[top=15%,align=center,pdfwidth=5in,alt=logo_IUT]
+:doctype: book
+:experimental:
+:!chapter-signifier:
+:example-caption: Exemple
+:encoding: utf-8
+:toc: left
+:toclevels: 3
+:toc-title: Table des matières
+:icons: font
+:imagesdir: images
+:sectnums:
+ifdef::backend-pdf[]
+:pdf-themesdir: themes
+:pdf-theme: my
+:pdf-fontsdir: fonts,GEM_FONTS_DIR
+:pdf-page-margin: [20mm, 18mm]
+:pdf-page-size: A4
+endif::[]
+:warning: image:./warning.png[alt=Warning, width=20,height=20]
+:pin: image:./pin.png[alt=Punaise, width=20,height=20]
+:question: image:./question.png[alt=Question, width=15,height=15]
+
+<<<
+
+== Choix pour la modélisation
+
+=== Forte affinité 
+La paire (H1,V1) à une forte affinité car ils possèdent 2 loisirs en commun, de plus ils sont chacun du genre voulu par l'autre et font partis de la même génération.
+
+image::H1V1.png[Forte affinité, width=500]
+
+=== Faible affinité
+La paire (H2,V2) à une faible affinité car ils ne possèdent aucun loisisr en commun, ne partage pas leur préférence de genre et possèdent un écart générationnel.
+
+=== Arbitrage entre les critères d'affinité
+Les paires (H3,V3), (H4,V4), (H5,V5) possèdent une affinité semblable car chaque paire possèdent deux préférences partagés mais possèdent une préférence différente : la première paire n'ont pas de hobbie en commun, la seconde ne partage pas leur attirance de genre et la troisième a un écart générationnel.
+
