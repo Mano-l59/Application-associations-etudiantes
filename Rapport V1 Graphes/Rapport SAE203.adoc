@@ -29,13 +29,19 @@ endif::[]
 == Choix pour la modélisation
 
 === Forte affinité 
-La paire (H1,V1) à une forte affinité car ils possèdent 2 loisirs en commun, de plus ils sont chacun du genre voulu par l'autre et font partis de la même génération.
+La paire `(H1,V1)` à une forte affinité car ils possèdent 2 loisirs en commun, de plus ils sont chacun du genre voulu par l'autre et font partis de la même génération.
 
+.Tableau de la forte affinité
 image::H1V1.png[Forte affinité, width=500]
 
 === Faible affinité
-La paire (H2,V2) à une faible affinité car ils ne possèdent aucun loisisr en commun, ne partage pas leur préférence de genre et possèdent un écart générationnel.
+La paire `(H2,V2)` à une faible affinité car ils ne possèdent aucun loisisr en commun, ne partage pas leur préférence de genre et possèdent un écart générationnel.
+
+.Tableau de la faible affinité
+image::H2V2.png[Faible affinité, width=500]
 
 === Arbitrage entre les critères d'affinité
-Les paires (H3,V3), (H4,V4), (H5,V5) possèdent une affinité semblable car chaque paire possèdent deux préférences partagés mais possèdent une préférence différente : la première paire n'ont pas de hobbie en commun, la seconde ne partage pas leur attirance de genre et la troisième a un écart générationnel.
+Les paires `(H3,V3)`, `(H4,V4)`, `(H5,V5)` possèdent une affinité semblable car chaque paire possèdent deux préférences partagés mais possèdent une préférence différente : la première paire n'ont pas de hobbie en commun, la seconde ne partage pas leur attirance de genre et la troisième a un écart générationnel.
 
+.Tableau des affinités variées
+image::Reste.png[Reste, width=500]
