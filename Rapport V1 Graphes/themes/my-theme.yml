@@ -58,7 +58,7 @@ role:
   red:
     font_color: #ff0000
   green:
-    font_color: #00aa00
+    font_color: #00ff00
   blue:
     font_color: #0000ff 
   text-center:

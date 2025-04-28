@@ -37,11 +37,36 @@ image::H1V1.png[Forte affinité, width=500]
 === Faible affinité
 La paire `(H2,V2)` à une faible affinité car ils ne possèdent aucun loisisr en commun, ne partage pas leur préférence de genre et possèdent un écart générationnel.
 
-.Tableau de la faible affinité
+.Tableau de la faible affinitéfootnote:[__ *00* présent dans `DATE_OF_BIRTHDAY` de `V2` désigne l'année 2000)__]
 image::H2V2.png[Faible affinité, width=500]
 
 === Arbitrage entre les critères d'affinité
-Les paires `(H3,V3)`, `(H4,V4)`, `(H5,V5)` possèdent une affinité semblable car chaque paire possèdent deux préférences partagés mais possèdent une préférence différente : la première paire n'ont pas de hobbie en commun, la seconde ne partage pas leur attirance de genre et la troisième a un écart générationnel.
+Les paires `(H3,V3)`, `(H4,V4)`, `(H5,V5)` possèdent une affinité semblable car chaques paires possèdent deux préférences partagées mais possèdent une préférence différente : dans la première paire `(H3,V3)`  n'a pas de hobbie en commun, la seconde paire `(H4,V4)` ne partage pas leur leur souhait d'association de genre avec l'autre et la dernière paire `(H5,V5)` a un écart générationnel trop important.
 
 .Tableau des affinités variées
 image::Reste.png[Reste, width=500]
+
+== Score d'affinité
+
+=== Tableau des coûts
+Dans notre modélisation, nous avons choisi donc que plus le coût est faible, plus l'affinité est forte. Nous avons donc choisi de définir le coût de chaque différence de préférence de la manière suivante :
+
+.Tableau des coûts
+image::Tableau de répartition des coûts.png[Tableau des coûts, width=500]
+
+A partir de ce tableau et de ces choix, nous pouvons maintenant établir le coût minimal et maximal d'une paire et définir par la suite ce que représente une affinité forte ou faible. +
+
+* *Le coût minimal d'une paire est donc de -1*
+* *Le coût maximal d'une paire est donc de 13*
+
+.Tableau de classification des affinités par intervalles de coût
+[options="header",cols="^.^,^.^,^.^,^.^"]
+|===
+| Coût de l'affectation d'une paire| [ -1 ; 3 [ | [ 3 ; 9 [ | [ 9 ; 13 ]
+
+| *Type d'affinité* |[green]#Forte affinité# | [blue]#Affinité moyenne# | [red]#Faible affinité#
+|===
+
+
+
+
