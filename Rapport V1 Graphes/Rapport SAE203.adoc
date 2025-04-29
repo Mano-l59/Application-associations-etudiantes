@@ -1,4 +1,4 @@
-= SAE S2.02 -- Rapport graphes
+= SAE S2.01-2.02 -- Rapport de Graphes
 Roty Clément <clement.roty.etu@univ-lille.fr>; Sergheraert Timothée <timothee.sergheraert.etu@univ-lille.fr>; Lemaire Mano <mano.lemaire.etu@univ-lille.fr>
 25 avril 2025 - Version 1.0
 :title-logo-image: image:logo.png[top=15%,align=center,pdfwidth=5in,alt=logo_IUT]
@@ -25,8 +25,12 @@ endif::[]
 :question: image:./question.png[alt=Question, width=15,height=15]
 
 <<<
+== Introduction
+Dans la suite de ce rapport, nous allons voir comment modéliser et conceptualiser un problème d'affectation. Notre sujet porte, lui, sur la formation de couples de personnes pour un séjour et ceci, basée dans un premier temps sur le préférence pour établir la meilleur compatibilité possible entre toutes ces personnes. Il s'agit donc *d'affecter* chaque individu selon leurs *affinités* respectives. 
 
 == Choix pour la modélisation
+
+On définit un couple d'individus comme une paire `(H~n~,V~n~)` où `H~n~` est l'individu qui accueillefootnote:[__ H pour HOST__] et `V~n~` est l'individu qui est accueillifootnote:[__ V pour VISITOR__]. Voyons ensemble quelques exemple pour mieux comprendre ce que nous allons modéliser.
 
 === Forte affinité 
 La paire `(H1,V1)` à une forte affinité car ils possèdent 2 loisirs en commun, de plus ils sont chacun du genre voulu par l'autre et font partis de la même génération.
@@ -37,7 +41,7 @@ image::H1V1.png[Forte affinité, width=500]
 === Faible affinité
 La paire `(H2,V2)` à une faible affinité car ils ne possèdent aucun loisisr en commun, ne partage pas leur préférence de genre et possèdent un écart générationnel.
 
-.Tableau de la faible affinitéfootnote:[__ *00* présent dans `DATE_OF_BIRTHDAY` de `V2` désigne l'année 2000)__]
+.Tableau de la faible affinitéfootnote:[__ *00* présent dans `DATE_OF_BIRTHDAY` de `V2` désigne l'année 2000__]
 image::H2V2.png[Faible affinité, width=500]
 
 === Arbitrage entre les critères d'affinité
@@ -46,6 +50,11 @@ Les paires `(H3,V3)`, `(H4,V4)`, `(H5,V5)` possèdent une affinité semblable ca
 .Tableau des affinités variées
 image::Reste.png[Reste, width=500]
 
+=== Exemple complet
+
+
+
+<<<
 == Score d'affinité
 
 === Tableau des coûts
@@ -66,6 +75,36 @@ A partir de ce tableau et de ces choix, nous pouvons maintenant établir le coû
 
 | *Type d'affinité* |[green]#Forte affinité# | [blue]#Affinité moyenne# | [red]#Faible affinité#
 |===
+
+=== Pseudo-code de l'algorithme du score d'affinité
+Mainenant que nous avons mis des chiffres sur que représente une affinité, on peut alors écrire le pseudo-code de l'algorithme permettant de calculer le score d'affinité d'un couple d'individu : +
+
+
+[source, java]
+----
+double score_affinité_1(hôte, visiteur):
+	score = 0
+	si hôte.âge == visiteur.âge:
+		score = score - 1
+    si abs(hôte.âge - visiteur.âge) > 2 ans && abs(hôte.âge - visiteur.âge) < 5 ans:
+		score = score + 2
+	sinon:
+		score = score + 5
+	pour chaque hobbie de hôte:
+		si le hobbie du visiteur n'est pas vide et est différent de celui de l'hôte:
+			score = score + 3
+	si hôte.gender != visiteur.pair_gender:
+		score = score + 1
+	si hôte.pair_gender != visiteur.gender:
+		score = score + 1
+	retourner score
+----
+
+=== Retour sur l'exemple complet
+
+
+
+
 
 
 
