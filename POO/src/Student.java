@@ -17,17 +17,19 @@ public class Student{
         this.constraintsMap=constraintsMap;
     }
     public Student(String name,String forename,String gender,LocalDate birthday,String country){
-        this(name,forename,gender,birthday,country, new HashMap<>());
-
+        this(name,forename,gender,birthday,country,Student.constraintsMapInit());
+        
     }
-    public void constraintsMapInit(){
-        this.constraintsMap.putIfAbsent(Constraints.GUEST_ANIMAL_ALLERGY, "B");
-        this.constraintsMap.putIfAbsent(Constraints.HOST_HAS_ANIMAL, "B");
-        this.constraintsMap.putIfAbsent(Constraints.GUEST_FOOD, "T");
-        this.constraintsMap.putIfAbsent(Constraints.HOST_FOOD, "T");
-        this.constraintsMap.putIfAbsent(Constraints.HOBBIES, "T");
-        this.constraintsMap.putIfAbsent(Constraints.PAIR_GENDER, "T");
-        this.constraintsMap.putIfAbsent(Constraints.HISTORY, "T");
+    public static HashMap<Constraints,String> constraintsMapInit(){
+        HashMap<Constraints,String> mapInit= new HashMap<>();
+        mapInit.putIfAbsent(Constraints.GUEST_ANIMAL_ALLERGY, "B");
+        mapInit.putIfAbsent(Constraints.HOST_HAS_ANIMAL, "B");
+        mapInit.putIfAbsent(Constraints.GUEST_FOOD, "T");
+        mapInit.putIfAbsent(Constraints.HOST_FOOD, "T");
+        mapInit.putIfAbsent(Constraints.HOBBIES, "T");
+        mapInit.putIfAbsent(Constraints.PAIR_GENDER, "T");
+        mapInit.putIfAbsent(Constraints.HISTORY, "T");
+        return mapInit;
     }
 
     public String getName(){
