@@ -43,4 +43,12 @@ public class Student{
     public String viewConstraintsMap(){
         return "Liste des contraintes / préférences : ";
     }
+
+    public int getAge(){
+        int age = LocalDate.now().getYear() - this.birthday.getYear();
+        if(LocalDate.now().isBefore(this.birthday.withYear(LocalDate.now().getYear()))){
+            age = age - 1;
+        }
+        return age;
+    }
 }
