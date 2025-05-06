@@ -1,4 +1,7 @@
+package POO;
+
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Student{
@@ -7,7 +10,7 @@ public class Student{
     private String gender;
     private LocalDate birthday;
     private String country;
-    private Map<String, String> constraintsMap;
+    private Map<String, String> constraintsMap = new HashMap<>();
 
     public Student(String name,String forename,String gender,LocalDate birthday,String country, Map<String, String> constraintsMap){
         this.name=name;
