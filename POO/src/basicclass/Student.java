@@ -17,6 +17,11 @@ public class Student{
     private String country;
     private HashMap<Constraints, String> constraintsMap;
 
+
+    /*
+     * Constructeur utilisé pour créer une instance d'un étudiant via toutes ses informations y compris ses préférences
+     * @since 1.0
+     */
     public Student(String name,String forename,String gender,LocalDate birthday,String country, HashMap<Constraints, String> constraintsMap){
         this.name=name;
         this.forename=forename;
@@ -24,6 +29,11 @@ public class Student{
         this.country=country;
         this.constraintsMap=constraintsMap;
     }
+
+    /*
+     * Constructeur qui fait appel à l'autre constructeur mais en initialisant à vide les préférences mais sans utiliser null pour limiter les erreurs
+     * @since 1.0
+     */
     public Student(String name,String forename,String gender,LocalDate birthday,String country){
         this(name,forename,gender,birthday,country,Student.constraintsMapInit());
         
@@ -88,7 +98,7 @@ public class Student{
     }
 
     /*
-     * Permet d'obtenir l'âge d'un étudiant grâce à un calcul.
+     * Permet d'obtenir l'âge d'un étudiant grâce à la date actuelle.
      * @return L'âge de l'étudiant
      * @since 1.0
      */
