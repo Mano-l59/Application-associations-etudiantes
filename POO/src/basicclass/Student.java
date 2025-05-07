@@ -58,6 +58,9 @@ public class Student{
     public HashMap<Constraints, String> getConstraintsMap(){
         return this.constraintsMap;
     }
+    public void add(Constraints critère, String newValeur){
+        this.constraintsMap.replace(critère,this.constraintsMap.get(critère),newValeur);
+    }
     @Override
     /*
      * Utilisée pour montrer les informations sur un étudiant
