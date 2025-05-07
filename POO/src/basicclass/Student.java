@@ -92,8 +92,18 @@ public class Student{
     public HashMap<Constraints, String> getConstraintsMap(){
         return this.constraintsMap;
     }
-    public void add(Constraints critère, String newValeur){
-        this.constraintsMap.replace(critère,this.constraintsMap.get(critère),newValeur);
+    public void setConstraintMap(HashMap<Constraints, String> map){
+        this.constraintsMap=map;
+    }
+    /**
+     * Méthode qui vient modifier la valeur du critère passé en paramètre
+     * @param critère Un des critères défini dans l'énum Constraints
+     * @param newValeur La nouvelle valeur associé à la contrainte citée.
+     * @return true si le changement a été effectué
+     * @since 1.0
+     */
+    public boolean setNewValeur(Constraints critère, String newValeur){
+        return this.constraintsMap.replace(critère,this.constraintsMap.get(critère),newValeur);
     }
     @Override
     /**

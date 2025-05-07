@@ -34,7 +34,7 @@ public class AssociationStudent {
      * @param scoreAssociation La valeur de type Integer qui va être ajoutée au score
      * @since 1.0
      */
-    public void setScoreAffinity(Integer scoreAssociation) {
+    private void setScoreAffinity(Integer scoreAssociation) {
         if(scoreAssociation==null){
             this.scoreAssociation=null; 
         }else{ 
@@ -48,7 +48,9 @@ public class AssociationStudent {
  * @since 1.0
  */
 
-    public Integer getScore_association() {
+    public Integer getScoreAssociation() {
+        this.scoreAssociation=0;
+        this.scoreAffinity();
         return this.scoreAssociation;
     }
 
@@ -94,7 +96,7 @@ public class AssociationStudent {
      * @since 1.0
      */
 
-    public void scoreAffinity() {
+    private void scoreAffinity() {
         if(HOST.getConstraintsMap().get(Constraints.HOST_HAS_ANIMAL).equals("yes") && GUEST.getConstraintsMap().get(Constraints.GUEST_ANIMAL_ALLERGY).equals("yes")){
            this.setScoreAffinity(null);
         }else if (!this.foodCompatibility()){
@@ -116,4 +118,21 @@ public class AssociationStudent {
             this.setScoreAffinity(this.scoreHobbie());
         }
     }
+    public String describeLevelOfAffinity(Integer score){
+        String levelAffinityString ="";
+        if(score==null){
+            levelAffinityString="Association impossible contrainte non respecté";
+        }else{
+            score = (int) score;
+            if(score >= -1 && score <3) levelAffinityString="Forte affinité";
+            else if(score >=3 && score <9) levelAffinityString="Moyenne affinité";
+            else levelAffinityString="Faible affinité";
+        }
+        return levelAffinityString;
+    }
+    public String toString(boolean full){
+        if(full) return HOST.toStringComplete()+"\n\tEST L'INVITE SUIVANT CHEZ LUI :\n"+GUEST.toStringComplete()+"\n L'association produit un score de : "+this.getScoreAssociation().toString()+"\n On qualifie alors l'association de : "+this.describeLevelOfAffinity(this.scoreAssociation);
+        else return HOST.toString()+"\n\tEST L'INVITE SUIVANT CHEZ LUI :\n"+GUEST.toString()+"\n L'association produit un score de : "+this.getScoreAssociation().toString()+"\n On qualifie alors l'association de : "+this.describeLevelOfAffinity(this.scoreAssociation);
+    }
+
 }
