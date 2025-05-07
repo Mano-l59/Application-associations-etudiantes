@@ -1,7 +1,7 @@
 package basicclass;
 
-/*
- * La classe représente un étudiant et comprend des méthodes permettant d'obtenir son âge, obtenir 
+/**
+ * La classe représente un étudiant et comprend des méthodes permettant d'obtenir son âge, obtenir son prénom, ses préférences...
  * @author <a>Clément Roty, Mano LEMAIRE, Timothée SERGHERAERT</a>
  * @version 1.0
  */
@@ -17,6 +17,11 @@ public class Student{
     private String country;
     private HashMap<Constraints, String> constraintsMap;
 
+
+    /**
+     * Constructeur utilisé pour créer une instance d'un étudiant via toutes ses informations y compris ses préférences
+     * @since 1.0
+     */
     public Student(String name,String forename,String gender,LocalDate birthday,String country, HashMap<Constraints, String> constraintsMap){
         this.name=name;
         this.forename=forename;
@@ -24,6 +29,11 @@ public class Student{
         this.country=country;
         this.constraintsMap=constraintsMap;
     }
+
+    /**
+     * Constructeur qui fait appel à l'autre constructeur mais en initialisant à vide les préférences mais sans utiliser null pour limiter les erreurs
+     * @since 1.0
+     */
     public Student(String name,String forename,String gender,LocalDate birthday,String country){
         this(name,forename,gender,birthday,country,Student.constraintsMapInit());
         
@@ -39,22 +49,46 @@ public class Student{
         mapInit.putIfAbsent(Constraints.HISTORY, "T");
         return mapInit;
     }
-
+    /**
+     * @return Retourne le nom d'un étudiant
+     * @since 1.0
+     */
     public String getName(){
         return this.name;
     }
+    /**
+     * @return Retourne le prénom d'un étudiant
+     * @since 1.0
+     */
     public String getForename(){
         return this.forename;
     }
+    /**
+     * @return Retourne le genre d'un étudiant
+     * @since 1.0
+     */
     public String getGender(){
         return this.gender;
     }
+    /**
+     * @return Retourne la date d'anniversaire d'un étudiant
+     * @since 1.0
+     */
     public LocalDate getBirthday(){
         return this.birthday;
     }
+    /**
+     * @return Retourne le pays d'un étudiant
+     * @since 1.0
+     */
     public String getCountry(){
         return this.country;
     }
+
+    /**
+     * @return Retourne le dictionnaire des préférences d'un étudiant
+     * @since 1.0
+     */
     public HashMap<Constraints, String> getConstraintsMap(){
         return this.constraintsMap;
     }
@@ -62,7 +96,7 @@ public class Student{
         this.constraintsMap.replace(critère,this.constraintsMap.get(critère),newValeur);
     }
     @Override
-    /*
+    /**
      * Utilisée pour montrer les informations sur un étudiant
      * @return Retourne une chaîne de caractères de la forme : Nom + Prénom
      * @since 1.0
@@ -71,7 +105,7 @@ public class Student{
         return "Nom : "+this.name+" Prénom : "+this.forename;
     }
     
-    /*
+    /**
      * Utilisée pour montrer toutes les informations possibles sur  un étudiant
      * @return Retourne une chaîne de caractères plus complète que la fonction toString() de base, en utilisant la forme suivante : le ToString() de base + Sexe + Date de naissance + Pays + Liste des contraintes et préférences
      * @since 1.0
@@ -80,7 +114,7 @@ public class Student{
         return "[ "+this.toString()+" Sexe : "+this.gender+" Date de naissance : "+this.birthday+" Pays : "+this.country+" ]\n-> Liste des contraintes / préférences : "+this.constraintsMap.toString();
     }
     
-    /*
+    /**
      * Montre la liste des contraintes 
      * @return Retourne la liste des contraintes et préférences en utilisant toString()
      * @since 1.0
@@ -90,8 +124,8 @@ public class Student{
 
     }
 
-    /*
-     * Permet d'obtenir l'âge d'un étudiant grâce à un calcul.
+    /**
+     * Permet d'obtenir l'âge d'un étudiant grâce à la date actuelle.
      * @return L'âge de l'étudiant
      * @since 1.0
      */
