@@ -1,7 +1,7 @@
 package basicclass;
 
 /*
- * La classe représente un étudiant et comprend des méthodes permettant d'obtenir son âge, obtenir 
+ * La classe représente un étudiant et comprend des méthodes permettant d'obtenir son âge, obtenir son prénom, ses préférences...
  * @author <a>Clément Roty, Mano LEMAIRE, Timothée SERGHERAERT</a>
  * @version 1.0
  */
