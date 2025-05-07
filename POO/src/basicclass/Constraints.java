@@ -1,3 +1,4 @@
+package basicclass;
 public enum  Constraints {
     GUEST_ANIMAL_ALLERGY,HOST_HAS_ANIMAL,GUEST_FOOD,HOST_FOOD,HOBBIES,PAIR_GENDER,HISTORY
     
