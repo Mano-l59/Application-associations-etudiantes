@@ -49,22 +49,46 @@ public class Student{
         mapInit.putIfAbsent(Constraints.HISTORY, "T");
         return mapInit;
     }
-
+    /*
+     * @return Retourne le nom d'un étudiant
+     * @since 1.0
+     */
     public String getName(){
         return this.name;
     }
+    /*
+     * @return Retourne le prénom d'un étudiant
+     * @since 1.0
+     */
     public String getForename(){
         return this.forename;
     }
+    /*
+     * @return Retourne le genre d'un étudiant
+     * @since 1.0
+     */
     public String getGender(){
         return this.gender;
     }
+    /*
+     * @return Retourne la date d'anniversaire d'un étudiant
+     * @since 1.0
+     */
     public LocalDate getBirthday(){
         return this.birthday;
     }
+    /*
+     * @return Retourne le pays d'un étudiant
+     * @since 1.0
+     */
     public String getCountry(){
         return this.country;
     }
+
+    /*
+     * @return Retourne le dictionnaire des préférences d'un étudiant
+     * @since 1.0
+     */
     public HashMap<Constraints, String> getConstraintsMap(){
         return this.constraintsMap;
     }
