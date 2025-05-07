@@ -1,17 +1,41 @@
 package basicclass;
+
+/*
+ * La classe représente une association entre deux "Students"
+ * @author <a>Clément Roty, Mano LEMAIRE, Timothée SERGHERAERT</a>
+ * @version 1.0
+ */
+
 import java.util.Arrays;
 import java.util.List;
 
 public class AssociationStudent {
     private final Student HOST;
     private final Student GUEST;
+    
+    /*
+     * Représente le score d'une affinité entre un hôte et un invité. Plus le score est haut, moins l'affinité est forte. L'attribut peut être nul si l'association est impossible.
+     * @since 1.0
+     */
     private Integer scoreAssociation;
 
+    /*
+     * Constructeur principal de la classe AssociationStudent
+     * @param hote L'étudiant hôte
+     * @param guest L'étudiant invité
+     * @since 1.0
+     */
+    
     public AssociationStudent(Student hote, Student guest) {
         this.HOST = hote;
         this.GUEST = guest;
         this.scoreAssociation = 0;
     }
+    /*
+     * Permet d'ajouter la valeur passée en paramètres à l'attribut scoreAssociation
+     * @param scoreAssociation La valeur de type Integer qui va être ajoutée au score
+     * @since 1.0
+     */
     public void setScoreAffinity(Integer scoreAssociation) {
         if(scoreAssociation==null){
             this.scoreAssociation=null; 
@@ -19,15 +43,36 @@ public class AssociationStudent {
             this.scoreAssociation = this.scoreAssociation+scoreAssociation;
         }
     }
+
+/*
+ * Fonction pour obtenir le scoreAssociation
+ * @return Le scoreAssociation de type Integer
+ * @since 1.0
+ */
+
     public Integer getScore_association() {
         return this.scoreAssociation;
     }
+
+    /*
+     * Permet de vérifier si le régime alimentaire de l'invité est compatible avec les repas servis par l'hôte
+     * @return Retourne true si l'hôte repose le régime nécessaire à l'invité
+     * @since 1.0
+     */
+
     public boolean foodCompatibility() {
         List<String> hoteFood = Arrays.asList(HOST.getConstraintsMap().get(Constraints.HOST_FOOD).split(";"));
         List<String> guestFood = Arrays.asList(GUEST.getConstraintsMap().get(Constraints.GUEST_FOOD).split(";"));
        
         return hoteFood.containsAll(guestFood);
     }
+
+    /*
+     * Permet d'avoir le malus de chaque hobby différents entre l'invité et l'hôte
+     * @return Retourne la valeur de type Integer, représentant le malus entre un hôte et un invité selon leurs hobbys.
+     * @since 1.0
+     */
+
     public Integer scoreHobbie(){
         final int COST_OF_HAVING_DIFF_HOBBIE=3;
         int cpt=0;
@@ -45,6 +90,11 @@ public class AssociationStudent {
 
         return (higherSize-cpt)*COST_OF_HAVING_DIFF_HOBBIE;
     }
+
+    /*
+     * Fonction principale du calcul du score d'affinité entre un hôte et un invité
+     * @since 1.0
+     */
 
     public void scoreAffinity() {
         if(HOST.getConstraintsMap().get(Constraints.HOST_HAS_ANIMAL).equals("yes") && GUEST.getConstraintsMap().get(Constraints.GUEST_ANIMAL_ALLERGY).equals("yes")){
