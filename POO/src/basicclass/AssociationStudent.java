@@ -61,9 +61,12 @@ public class AssociationStudent {
      */
 
     public boolean foodCompatibility() {
+      
         List<String> hoteFood = Arrays.asList(HOST.getConstraintsMap().get(Constraints.HOST_FOOD).split(";"));
         List<String> guestFood = Arrays.asList(GUEST.getConstraintsMap().get(Constraints.GUEST_FOOD).split(";"));
-       
+        if(guestFood.isEmpty()){
+            return true;
+        }
         return hoteFood.containsAll(guestFood);
     }
 

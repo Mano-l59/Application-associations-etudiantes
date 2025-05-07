@@ -3,11 +3,13 @@ package basicclass;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.HashMap;
 
 public class testAssociationStudent {
@@ -33,7 +35,6 @@ public class testAssociationStudent {
         this.s6= new Student("Désesssspoire", "Léonardo", "other", LocalDate.of(2006,6,2), "Listenbourg");
         s1.setConstraintMap(mapContraintes1);
         s2.setConstraintMap(mapContraintes2);
-        s6.setConstraintMap(mapContraintes6);
 
         pairS1_S2=new AssociationStudent(s1, s2);
         pairS2_S1=new AssociationStudent(s2, s1);
@@ -42,7 +43,66 @@ public class testAssociationStudent {
     }
     
     @Test
-    public void testStudentGetAge(){
-        
+        public void testGetAge() {
+        LocalDate date = LocalDate.of(2006,6,2);
+        assertEquals(date, s3.getBirthday());
+
+        Period period = s6.getBirthday().until(LocalDate.now());
+        int expectedAge = period.getYears();
+        assertEquals(expectedAge, s6.getAge());
     }
-}
+
+    @Test
+    public void testConstraintsMapInit() {
+        HashMap<Constraints, String> initMap = Student.constraintsMapInit();
+        assertEquals(7, initMap.size());
+        assertEquals("B", initMap.get(Constraints.GUEST_ANIMAL_ALLERGY));
+        assertEquals("T", initMap.get(Constraints.HOBBIES));
+    }
+
+    @Test
+    public void testSetNewValeur() {
+        boolean changed = s1.setNewValeur(Constraints.PAIR_GENDER, "female");
+        assertTrue(changed);
+        assertEquals("female", s1.getConstraintsMap().get(Constraints.PAIR_GENDER));
+    }
+
+    // Tests AssociationStudent
+
+    @Test
+    public void testGetScoreAssociationValid() {
+        Integer score = pairS1_S2.getScoreAssociation();
+        assertTrue(score == 6); // La borne minimale connue
+    }
+
+    @Test
+    public void testGetScoreAssociationIncompatible() {
+        // s3 est allergique et s6 a un animal → association impossible
+        Integer score = pairS3_S6.getScoreAssociation();
+        assertNull(score);
+    }
+
+    @Test
+    public void testFoodCompatibilityTrue() {
+        assertTrue(pairS2_S1.foodCompatibility());
+    }
+
+    @Test
+    public void testFoodCompatibilityFalse() {
+        assertFalse(pairS4_S5.foodCompatibility());
+    }
+
+    @Test
+    public void testScoreHobbie() {
+        int hobbieMalus = pairS1_S2.scoreHobbie();
+        assertTrue(hobbieMalus >= 0);
+    }
+
+    @Test
+    public void testDescribeLevelOfAffinity() {
+        assertEquals("Forte affinité", pairS1_S2.describeLevelOfAffinity(0));
+        assertEquals("Moyenne affinité", pairS1_S2.describeLevelOfAffinity(4));
+        assertEquals("Faible affinité", pairS1_S2.describeLevelOfAffinity(12));
+        assertEquals("Association impossible contrainte non respecté", pairS3_S6.describeLevelOfAffinity(null));
+    }}
+

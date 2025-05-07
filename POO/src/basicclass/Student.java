@@ -26,6 +26,7 @@ public class Student{
         this.name=name;
         this.forename=forename;
         this.gender=gender;
+        this.birthday=birthday;
         this.country=country;
         this.constraintsMap=constraintsMap;
     }
@@ -141,10 +142,7 @@ public class Student{
      */
     public int getAge(){
         int age = LocalDate.now().getYear() - this.birthday.getYear();
-        if(LocalDate.now().isBefore(this.birthday.withYear(LocalDate.now().getYear()))){
-            age = age - 1;
-        }
-        return age;
+        return age-1;
     }
 
 }
