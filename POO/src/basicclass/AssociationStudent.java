@@ -4,6 +4,7 @@
  * @version 1.0
  */
 package basicclass;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -170,11 +171,12 @@ public class AssociationStudent {
         else return HOST.toString()+"\n\tEST L'INVITE SUIVANT CHEZ LUI :\n"+GUEST.toString()+"\n L'association produit un score de : "+this.getScoreAssociation().toString()+"\n On qualifie alors l'association de : "+this.describeLevelOfAffinity();
     }
 
-    public boolean laFranceEstReloue(){
-        
-
-
-        return true;
+    public Boolean laFranceEstReloue(){  
+        List<String> hoteHobbies = Arrays.asList(HOST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
+        List<String> guestHobbies = Arrays.asList(GUEST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
+        List<String> commonHobbieList = new ArrayList<>(hoteHobbies);
+        commonHobbieList.retainAll(guestHobbies);
+        return (commonHobbieList.isEmpty());
     }
 
 }
