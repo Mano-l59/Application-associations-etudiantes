@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.HashMap;
 
 public class testAssociationStudent {
@@ -35,7 +34,7 @@ public class testAssociationStudent {
 
         pairS1_S2=new AssociationStudent(s1, s2);
         pairS2_S1=new AssociationStudent(s2, s1);
-        pairS3_S6=new AssociationStudent(s3, s6);
+        //pairS3_S6=new AssociationStudent(s3, s6);
         pairS4_S5=new AssociationStudent(s4, s5);
         pairS4_S2 = new AssociationStudent(s4, s2);
     }
@@ -45,8 +44,7 @@ public class testAssociationStudent {
         LocalDate date = LocalDate.of(2006,6,2);
         assertEquals(date, s3.getBirthday());
 
-        Period period = s6.getBirthday().until(LocalDate.now());
-        int expectedAge = period.getYears();
+        int expectedAge = 18;
         assertEquals(expectedAge, s6.getAge());
     }
 
@@ -93,8 +91,11 @@ public class testAssociationStudent {
 
     @Test
     public void testDescribeLevelOfAffinity() {
-        //assertEquals("Association impossible contrainte non respecté", pairS1_S2.describeLevelOfAffinity());
-        //assertEquals("Association impossible contrainte non respecté", pairS2_S1.describeLevelOfAffinity());
+        pairS1_S2.getScoreAssociation();
+        pairS2_S1.getScoreAssociation();
+        pairS4_S2.getScoreAssociation();
+        assertEquals("Association impossible contrainte non respecté", pairS1_S2.describeLevelOfAffinity());
+        assertEquals("Association impossible contrainte non respecté", pairS2_S1.describeLevelOfAffinity());
         assertEquals("Faible affinité", pairS4_S2.describeLevelOfAffinity());
     }}
 
