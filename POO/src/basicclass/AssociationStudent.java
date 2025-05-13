@@ -89,20 +89,41 @@ public class AssociationStudent {
 
     public Integer scoreHobbie(){
         final int COST_OF_HAVING_DIFF_HOBBIE=3;
-        int cpt=0;
-        int higherSize;
+        final int COST_OF_HAVING_LESS_HOBBIE=1;
         List<String> hoteHobbies = Arrays.asList(HOST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
         List<String> guestHobbies = Arrays.asList(GUEST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
-        
-        for(String h_hobbie : hoteHobbies){
-            for(String g_hobbie : guestHobbies){
-                if (h_hobbie.equals(g_hobbie)) cpt++;
-            }
-        }
-        if(hoteHobbies.size()>=guestHobbies.size()) higherSize=hoteHobbies.size();
-        else higherSize=hoteHobbies.size();
+        List<String> smallerString, higherStrings;
+        int ScoreHobbieMalus=0;
+        int cpt=0;
+        System.out.println("Hobbies de l'hôte : " + hoteHobbies);
+        System.out.println("Hobbies de l'invité : " + guestHobbies);
+        System.out.println("Taille hoteHobbies : " + hoteHobbies.size());
+        System.out.println("Taille guestHobbies : " + guestHobbies.size());
 
-        return (higherSize-cpt)*COST_OF_HAVING_DIFF_HOBBIE;
+        if(hoteHobbies.size()==guestHobbies.size()){
+            for(String h_hobbie : hoteHobbies){
+                for(String g_hobbie : guestHobbies){
+                    if (h_hobbie.equals(g_hobbie)) cpt++;
+                }
+            }
+            ScoreHobbieMalus=hoteHobbies.size()-cpt*COST_OF_HAVING_DIFF_HOBBIE;
+        }else{
+            if (hoteHobbies.size()>guestHobbies.size()){
+                smallerString=guestHobbies;
+                higherStrings=hoteHobbies;
+            }else{
+                smallerString=hoteHobbies;
+                higherStrings=guestHobbies;
+            }
+            for (String s_hobbie : smallerString) {
+                for (String hi_hobbie : higherStrings) {
+                    if(s_hobbie.equals(hi_hobbie)) cpt++;
+                }
+            }
+            ScoreHobbieMalus=((smallerString.size()-cpt)*COST_OF_HAVING_DIFF_HOBBIE)+(higherStrings.size()-smallerString.size())*COST_OF_HAVING_LESS_HOBBIE;
+        }
+
+        return ScoreHobbieMalus;
     }
 
     /**
@@ -147,6 +168,13 @@ public class AssociationStudent {
     public String toString(boolean full){
         if(full) return HOST.toStringComplete()+"\n\tEST L'INVITE SUIVANT CHEZ LUI :\n"+GUEST.toStringComplete()+"\n L'association produit un score de : "+this.getScoreAssociation().toString()+"\n On qualifie alors l'association de : "+this.describeLevelOfAffinity();
         else return HOST.toString()+"\n\tEST L'INVITE SUIVANT CHEZ LUI :\n"+GUEST.toString()+"\n L'association produit un score de : "+this.getScoreAssociation().toString()+"\n On qualifie alors l'association de : "+this.describeLevelOfAffinity();
+    }
+
+    public boolean laFranceEstReloue(){
+        
+
+
+        return true;
     }
 
 }
