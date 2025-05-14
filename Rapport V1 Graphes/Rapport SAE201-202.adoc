@@ -28,29 +28,31 @@ endif::[]
 == Introduction
 Dans la suite de ce rapport, nous allons voir comment modéliser et conceptualiser un problème d'affectation. Notre sujet porte, lui, sur la formation de couples de personnes pour un séjour et ceci, basée dans un premier temps sur le préférence pour établir la meilleur compatibilité possible entre toutes ces personnes. Il s'agit donc *d'affecter* chaque individu selon leurs *affinités* respectives. 
 
-== Choix pour la modélisation
+== Version 1
+
+=== Choix pour la modélisation
 
 On définit un couple d'individus comme une paire `(H~n~,V~n~)` où `H~n~` est l'individu qui accueille et `V~n~` est l'individu qui est accueilli. Voyons ensemble quelques exemple pour mieux comprendre ce que nous allons modéliser.
 
-=== Forte affinité 
+==== Forte affinité 
 La paire `(H1,V1)` à une forte affinité car ils possèdent 2 loisirs en commun, de plus ils sont chacun du genre voulu par l'autre et font partis de la même génération.
 
 .Tableau de la forte affinité
 image::H1V1.png[Forte affinité, width=500]
 
-=== Faible affinité
+==== Faible affinité
 La paire `(H2,V2)` à une faible affinité car ils ne possèdent aucun loisisr en commun, ne partage pas leur préférence de genre et possèdent un écart générationnel.
 
 .Tableau de la faible affinité
 image::H2V2.png[Faible affinité, width=500]
 
-=== Arbitrage entre les critères d'affinité
+==== Arbitrage entre les critères d'affinité
 Les paires `(H3,V3)`, `(H4,V4)`, `(H5,V5)` possèdent une affinité semblable car chaques paires possèdent deux préférences partagées mais possèdent une préférence différente : dans la première paire `(H3,V3)`  n'a pas de hobbie en commun, la seconde paire `(H4,V4)` ne partage pas leur leur souhait d'association de genre avec l'autre et la dernière paire `(H5,V5)` a un écart générationnel trop important.
 
 .Tableau des affinités variées
 image::Reste.png[Reste, width=500]
 
-=== Exemple complet
+==== Exemple complet
 Nous avons dans l'exmple ci-dessous, 8 individus , 4 hôtes (__Adrien, Béatrice, Cédric, Diane__) et 4 visiteurs (__Wendy, Xavier, Yasmine et Zack__) que l'on représentera par la suite par la 1ere lettre de leur prénom
  qui possèdent des affinités variées. En fonction de ces affinités nous allons essayer à la main de trouver une affectaion optimale : +
 
@@ -74,9 +76,9 @@ Nous remarquons ainsi que le plus gros problème dans cet manière de faire est 
 
 
 <<<
-== Score d'affinité
+=== Score d'affinité
 
-=== Tableau des coûts
+==== Tableau des coûts
 Dans notre modélisation, nous avons choisi donc que plus le coût est faible, plus l'affinité est forte. Nous avons donc choisi de définir le coût de chaque différence de préférence de la manière suivante :
 
 .Tableau des coûts
@@ -95,7 +97,7 @@ A partir de ce tableau et de ces choix, nous pouvons maintenant établir le coû
 | *Type d'affinité* |[green]#Forte affinité# | [blue]#Affinité moyenne# | [red]#Faible affinité#
 |===
 
-=== Pseudo-code de l'algorithme du score d'affinité
+==== Pseudo-code de l'algorithme du score d'affinité
 Mainenant que nous avons mis des chiffres sur que représente une affinité, on peut alors écrire le pseudo-code de l'algorithme permettant de calculer le score d'affinité d'un couple d'individu : +
 
 
@@ -119,7 +121,7 @@ double score_affinité_1(hôte, visiteur):
 	retourner score
 ----
 
-=== Retour sur l'exemple complet
+==== Retour sur l'exemple complet
 Maintenant que nous avons un algorithme qui nous permet de calculer le score d'affinité entre deux individus, nous allons l'appliquer à l'exemple vu avant afin de créer la matrice ci-dessous : +
 
 .Matrice des scores d'affinité
@@ -139,6 +141,8 @@ Finalement, nous avons donc une [red]*affectation à cout minimal de 19* et dont
 
 On remarque alors que dans notre cas, l'algorithme n'a donné aucune associations de `forte affinité` mais a évité toutefois les associations de `faible affinité` a garantie que tout les individus soit moyennement satisfaits de leur paire.  
 ====
+
+== Version 2 
 
 
 
