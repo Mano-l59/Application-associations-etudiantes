@@ -96,11 +96,6 @@ public class AssociationStudent {
         List<String> smallerString, higherStrings;
         int ScoreHobbieMalus=0;
         int cpt=0;
-        System.out.println("Hobbies de l'hôte : " + hoteHobbies);
-        System.out.println("Hobbies de l'invité : " + guestHobbies);
-        System.out.println("Taille hoteHobbies : " + hoteHobbies.size());
-        System.out.println("Taille guestHobbies : " + guestHobbies.size());
-
         if(hoteHobbies.size()==guestHobbies.size()){
             for(String h_hobbie : hoteHobbies){
                 for(String g_hobbie : guestHobbies){
@@ -133,25 +128,30 @@ public class AssociationStudent {
      */
 
     private void scoreAffinity() {
-        if(HOST.getConstraintsMap().get(Constraints.HOST_HAS_ANIMAL).equals("yes") && GUEST.getConstraintsMap().get(Constraints.GUEST_ANIMAL_ALLERGY).equals("yes")){
-           this.setScoreAffinity(null);
-        }else if (!this.foodCompatibility()){
+        if(HOST.getCountry().equals(GUEST.getCountry())){
             this.setScoreAffinity(null);
-        }else{
-            if(HOST.getAge()==GUEST.getAge()){
-                this.setScoreAffinity(-1);
-            }else if((HOST.getAge()-GUEST.getAge())>2 &&(HOST.getAge()-GUEST.getAge())<5){
-                this.setScoreAffinity(2);
+        }
+        else{
+            if(HOST.getConstraintsMap().get(Constraints.HOST_HAS_ANIMAL).equals("yes") && GUEST.getConstraintsMap().get(Constraints.GUEST_ANIMAL_ALLERGY).equals("yes")){
+            this.setScoreAffinity(null);
+            }else if (!this.foodCompatibility()){
+                this.setScoreAffinity(null);
             }else{
-                this.setScoreAffinity(5);
+                if(HOST.getAge()==GUEST.getAge()){
+                    this.setScoreAffinity(-1);
+                }else if((HOST.getAge()-GUEST.getAge())>2 &&(HOST.getAge()-GUEST.getAge())<5){
+                    this.setScoreAffinity(2);
+                }else{
+                    this.setScoreAffinity(5);
+                }
+                if(!HOST.getGender().equals(GUEST.getConstraintsMap().get(Constraints.PAIR_GENDER))){
+                    this.setScoreAffinity(1);
+                }
+                if(!GUEST.getGender().equals(HOST.getConstraintsMap().get(Constraints.PAIR_GENDER))){
+                    this.setScoreAffinity(1);
+                }
+                this.setScoreAffinity(this.scoreHobbie());
             }
-            if(!HOST.getGender().equals(GUEST.getConstraintsMap().get(Constraints.PAIR_GENDER))){
-                this.setScoreAffinity(1);
-            }
-            if(!GUEST.getGender().equals(HOST.getConstraintsMap().get(Constraints.PAIR_GENDER))){
-                this.setScoreAffinity(1);
-            }
-            this.setScoreAffinity(this.scoreHobbie());
         }
     }
     public String describeLevelOfAffinity(){
@@ -171,12 +171,16 @@ public class AssociationStudent {
         else return HOST.toString()+"\n\tEST L'INVITE SUIVANT CHEZ LUI :\n"+GUEST.toString()+"\n L'association produit un score de : "+this.getScoreAssociation().toString()+"\n On qualifie alors l'association de : "+this.describeLevelOfAffinity();
     }
 
-    public Boolean laFranceEstReloue(){  
-        List<String> hoteHobbies = Arrays.asList(HOST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
-        List<String> guestHobbies = Arrays.asList(GUEST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
-        List<String> commonHobbieList = new ArrayList<>(hoteHobbies);
-        commonHobbieList.retainAll(guestHobbies);
-        return (commonHobbieList.isEmpty());
+    public Boolean laFranceEstReloue(){ 
+        if(HOST.getCountry().equals("France")|| GUEST.getCountry().equals("France")){
+            List<String> hoteHobbies = Arrays.asList(HOST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
+            List<String> guestHobbies = Arrays.asList(GUEST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
+            List<String> commonHobbieList = new ArrayList<>(hoteHobbies);
+            commonHobbieList.retainAll(guestHobbies);
+            return (commonHobbieList.isEmpty());
+        }else{
+            return false;
+        }
     }
 
 }
