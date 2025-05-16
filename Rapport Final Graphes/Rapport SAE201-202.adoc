@@ -1,0 +1,197 @@
+= SAE S2.01-2.02 -- Rapport de Graphes
+Roty Clément <clement.roty.etu@univ-lille.fr>; Sergheraert Timothée <timothee.sergheraert.etu@univ-lille.fr>; Lemaire Mano <mano.lemaire.etu@univ-lille.fr>
+25 avril 2025 - Version Final
+:title-logo-image: image:logo.png[top=15%,align=center,pdfwidth=5in,alt=logo_IUT]
+:doctype: book
+:experimental:
+:!chapter-signifier:
+:example-caption: Exemple
+:encoding: utf-8
+:toc: left
+:toclevels: 3
+:toc-title: Table des matières
+:icons: font
+:imagesdir: images
+:sectnums:
+ifdef::backend-pdf[]
+:pdf-themesdir: themes
+:pdf-theme: my
+:pdf-fontsdir: fonts,GEM_FONTS_DIR
+:pdf-page-margin: [20mm, 18mm]
+:pdf-page-size: A4
+endif::[]
+:warning: image:./warning.png[alt=Warning, width=20,height=20]
+:pin: image:./pin.png[alt=Punaise, width=20,height=20]
+:question: image:./question.png[alt=Question, width=15,height=15]
+
+	
+== Introduction
+Dans la suite de ce rapport, nous allons voir comment modéliser et conceptualiser un problème d'affectation. Notre sujet porte, lui, sur la formation de couples de personnes pour un séjour et ceci, basée dans un premier temps sur le préférence pour établir la meilleur compatibilité possible entre toutes ces personnes. Il s'agit donc *d'affecter* chaque individu selon leurs *affinités* respectives. 
+
+== Version 1
+
+=== Choix pour la modélisation
+
+On définit un couple d'individus comme une paire `(H~n~,V~n~)` où `H~n~` est l'individu qui accueille et `V~n~` est l'individu qui est accueilli. Voyons ensemble quelques exemple pour mieux comprendre ce que nous allons modéliser.
+
+==== Forte affinité 
+La paire `(H1,V1)` à une forte affinité car ils possèdent 2 loisirs en commun, de plus ils sont chacun du genre voulu par l'autre et font partis de la même génération.
+
+.Tableau de la forte affinité
+image::H1V1.png[Forte affinité, width=500]
+
+==== Faible affinité
+La paire `(H2,V2)` à une faible affinité car ils ne possèdent aucun loisisr en commun, ne partage pas leur préférence de genre et possèdent un écart générationnel.
+
+.Tableau de la faible affinité
+image::H2V2.png[Faible affinité, width=500]
+
+==== Arbitrage entre les critères d'affinité
+Les paires `(H3,V3)`, `(H4,V4)`, `(H5,V5)` possèdent une affinité semblable car chaques paires possèdent deux préférences partagées mais possèdent une préférence différente : dans la première paire `(H3,V3)`  n'a pas de hobbie en commun, la seconde paire `(H4,V4)` ne partage pas leur leur souhait d'association de genre avec l'autre et la dernière paire `(H5,V5)` a un écart générationnel trop important.
+
+.Tableau des affinités variées
+image::Reste.png[Reste, width=500]
+
+==== Exemple complet
+Nous avons dans l'exmple ci-dessous, 8 individus , 4 hôtes (__Adrien, Béatrice, Cédric, Diane__) et 4 visiteurs (__Wendy, Xavier, Yasmine et Zack__) que l'on représentera par la suite par la 1ere lettre de leur prénom
+ qui possèdent des affinités variées. En fonction de ces affinités nous allons essayer à la main de trouver une affectaion optimale : +
+
+.Tableau des 8 individus de notre exemple
+image::ExempleComplet.png[Reste, width=500]
+
+Maintenant s'il devait faire nos choix d'affectation, nous pourrions dire que l'appariement qui nous semble être le meilleur est celui-ci : +
+
+.Une affectation possible qui semble optimale :
+====
+- btn:[A avec X] car ils ont le Jeu-vidéo en hobbie commun, et qu'ils ont un age proche
+- btn:[B avec W] car ils partagent la lecture comme passion commune, n'ont pas d'écart générationnel important
+- btn:[C avec Z] car ils ont en commun le hobbie de la musique et que chacun voulait avoir un homme avec eux et leur écart d'age est d'environ 2 ans.
+- btn:[D avec Y] sont la dernière paire restante, mais elle possède tout de même un hobbie en commun en dépit d'un plus grand écart générationnel. +
+====
+
+.Conclusion
+****
+Nous remarquons ainsi que le plus gros problème dans cet manière de faire est que cela reste **arbitraire** et pourrais changer lors d'une autre affectaion. C'est donc très **peu fiable et représentatif** de la qualité d'une affectation entre deux de ces individus. Enfin nous avons fait ces affectations à la main parce qu'il n'y en avait que 4 à faire. Cepandant pour notre projet, nous allons avoir bien plus d'individus à associer donc il nous faut forcément un algorithme pour cela. Hors une machine ça ne comprend qu'une chose, c'est les chiffres. Il nous faut donc **quantifer, par un score**, la qualité de l'affinité entre deux individus.
+****
+
+
+<<<
+=== Score d'affinité
+
+==== Tableau des coûts
+Dans notre modélisation, nous avons choisi donc que plus le coût est faible, plus l'affinité est forte. Nous avons donc choisi de définir le coût de chaque différence de préférence de la manière suivante :
+
+.Tableau des coûts
+image::Tableau de répartition des coûts.png[Tableau des coûts, width=500]
+
+A partir de ce tableau et de ces choix, nous pouvons maintenant établir le coût minimal et maximal d'une paire et définir par la suite ce que représente une affinité forte ou faible. +
+
+* *Le coût minimal d'une paire est donc de -1*
+* *Le coût maximal d'une paire est donc de 13*
+
+.Tableau de classification des affinités par intervalles de coût
+[options="header",cols="^.^,^.^,^.^,^.^"]
+|===
+| Coût de l'affectation d'une paire| [ -1 ; 3 [ | [ 3 ; 9 [ | [ 9 ; 13 ]
+
+| *Type d'affinité* |[green]#Forte affinité# | [blue]#Affinité moyenne# | [red]#Faible affinité#
+|===
+
+==== Pseudo-code de l'algorithme du score d'affinité
+Mainenant que nous avons mis des chiffres sur que représente une affinité, on peut alors écrire le pseudo-code de l'algorithme permettant de calculer le score d'affinité d'un couple d'individu : +
+
+
+[source, java]
+----
+double score_affinité_1(hôte, visiteur):
+	score = 0
+	si hôte.âge == visiteur.âge:
+		score = score - 1
+    si abs(hôte.âge - visiteur.âge) > 2 ans && abs(hôte.âge - visiteur.âge) < 5 ans:
+		score = score + 2
+	sinon:
+		score = score + 5
+	pour chaque hobbie de hôte:
+		si le hobbie du visiteur n'est pas vide et est différent de celui de l'hôte:
+			score = score + 3
+	si hôte.gender != visiteur.pair_gender:
+		score = score + 1
+	si hôte.pair_gender != visiteur.gender:
+		score = score + 1
+	retourner score
+----
+
+==== Retour sur l'exemple complet
+Maintenant que nous avons un algorithme qui nous permet de calculer le score d'affinité entre deux individus, nous allons l'appliquer à l'exemple vu avant afin de créer la matrice ci-dessous : +
+
+.Matrice des scores d'affinité
+image::matrice.png[Matrice des scores d'affinité, width=300]
+
+Maintenant que nous avons notre matrice, nous pouvons effectuer un algorithme qui va calculer l'affectation à cout minimal sur l'ensemble cette matrice. Nous obtenons le resultat suivant : +
+
+.Capture d'écran après execution de l'algorithme d'affectation de cout minimal.
+image::affectation.png[][Affectation, width=300]
+
+Finalement, nous avons donc une [red]*affectation à cout minimal de 19* et dont le détail est affiché ci-dessous : +
+====
+- btn:[A avec W] pour un cout de 6,
+- btn:[B avec Z] pour un cout de 4,
+- btn:[C avec X] pour un cout de 4,
+- btn:[D avec Y] pour un cout de 5 et qui était la seule paire que nous avions trouvé avant et qui est restée inchangée.
+
+On remarque alors que dans notre cas, l'algorithme n'a donné aucune associations de `forte affinité` mais a évité toutefois les associations de `faible affinité` a garantie que tout les individus soit moyennement satisfaits de leur paire.  
+====
+
+== Version 2 
+
+=== Choix pour la modélisation avec appariement total
+
+image::2.1.png[Modélisation avec appariement total, width=300]
+
+L'appariement qui nous semble être le meilleur est celui-ci : +
+
+.Une affectation possible qui semble optimale :
+====
+- btn:[A1 avec X1] 
+- btn:[B1 avec Z1] 
+- btn:[C1 avec Y1] 
+- btn:[D1 avec W1] 
+Cet appariement permet de respecter les contraintes rédibitoires.
+====
+
+=== Choix pour la modélisation sans appariement total
+
+image::2.2.png[Modélisation sans appariement total, width=300]
+
+L'appariement qui nous semble être le meilleur est celui-ci : +
+
+.Une affectation possible qui semble optimale :
+====
+- btn:[A2 avec X2]
+Voici le seul appariement possible car toutes les autres combinaisons sont bloqués à causes de contraintes rédibitoires.
+====
+
+=== Pseudo-code
+
+[source, java]
+----
+double score_affinité_2(hôte, visiteur):
+	score = 0
+	si hôte.animal=vrai and visiteur.allergie=vrai:
+		score = score + 1e9
+	sinon si hôte.food!=visiteur.food:
+		score = score + 1e9
+	score = score + score_affinité_1(hôte, visiteur)
+	retourner score
+----
+
+=== Matrices d'adjacences
+
+image::Matrice2.1.png[Matrice avec appariement total, width=300]
+
+image::Matrice2.2.png[Matrice sans appariement total, width=300]
+
+=== Robustesse de notre modélisation
+
+Nous utilisons un coût très élevé pour les contraintes rédhibitoires afin de les éviter autant que possible. Cependant, cela ne garantit pas toujours leur respect absolu. Si aucune autre solution valable n’existe, l’algorithme pourrait quand même choisir une paire interdite. Donc mettre un coût très élevé n’est pas forcément la meilleure méthode pour assurer strictement le respect des contraintes.
+
