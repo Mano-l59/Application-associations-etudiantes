@@ -189,7 +189,7 @@ double score_affinité_2(hôte, visiteur):
 
 === Matrices d'adjacences
 
-image::Matrice2.1.png.png[Matrice avec appariement total, width=300]
+image::Matrice2.1png.png[Matrice avec appariement total, width=300]
 
 image::Matrice2.2.png[Matrice sans appariement total, width=300]
 
