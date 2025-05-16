@@ -146,7 +146,7 @@ On remarque alors que dans notre cas, l'algorithme n'a donné aucune association
 
 === Choix pour la modélisation avec appariement total
 
-image::2.1.png[Modélisation avec appariement total, width=300]
+image::2.1.png.png[Modélisation avec appariement total, width=300]
 
 L'appariement qui nous semble être le meilleur est celui-ci : +
 
@@ -156,6 +156,7 @@ L'appariement qui nous semble être le meilleur est celui-ci : +
 - btn:[B1 avec Z1] 
 - btn:[C1 avec Y1] 
 - btn:[D1 avec W1] 
+
 Cet appariement permet de respecter les contraintes rédibitoires.
 ====
 
@@ -168,6 +169,7 @@ L'appariement qui nous semble être le meilleur est celui-ci : +
 .Une affectation possible qui semble optimale :
 ====
 - btn:[A2 avec X2]
+
 Voici le seul appariement possible car toutes les autres combinaisons sont bloqués à causes de contraintes rédibitoires.
 ====
 
