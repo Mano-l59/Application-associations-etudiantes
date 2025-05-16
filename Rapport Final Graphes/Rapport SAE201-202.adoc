@@ -213,3 +213,15 @@ double score_affinité_3(hôte, visiteur):
         sinon:
             score = score + 25
     retourner score
+
+=== Retour sur notre exemple
+
+.Voici les scores obtenus pour les paires :
+====
+- btn:[H1 avec V1] 28 + 25 pour une incompatibilité animal, Total : 53
+- btn:[H2 avec V2] 34, sans incompatibilité
+- btn:[H3 avec V3] 32 + 25 pour un incompatibilité de nourriture, Total : 57
+- btn:[H4 avec V4] 35, sans incompatibilité
+====
+
+On remarque donc que les scores obtenus sont similaires, voire proches, malgré un écart dû aux incompatibilités, ce qui reste cohérent avec notre volonté de rechercher un équilibre entre affinité et incompatibilité.
