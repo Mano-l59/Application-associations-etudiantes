@@ -146,7 +146,7 @@ On remarque alors que dans notre cas, l'algorithme n'a donné aucune association
 
 === Choix pour la modélisation avec appariement total
 
-image::2.1.png.png[Modélisation avec appariement total, width=300]
+image::2.1.png[Modélisation avec appariement total, width=300]
 
 L'appariement qui nous semble être le meilleur est celui-ci : +
 
@@ -189,7 +189,7 @@ double score_affinité_2(hôte, visiteur):
 
 === Matrices d'adjacences
 
-image::Matrice2.1.png[Matrice avec appariement total, width=300]
+image::Matrice2.1.png.png[Matrice avec appariement total, width=300]
 
 image::Matrice2.2.png[Matrice sans appariement total, width=300]
 
