@@ -195,3 +195,21 @@ image::Matrice2.2.png[Matrice sans appariement total, width=300]
 
 Nous utilisons un coût très élevé pour les contraintes rédhibitoires afin de les éviter autant que possible. Cependant, cela ne garantit pas toujours leur respect absolu. Si aucune autre solution valable n’existe, l’algorithme pourrait quand même choisir une paire interdite. Donc mettre un coût très élevé n’est pas forcément la meilleure méthode pour assurer strictement le respect des contraintes.
 
+== Version 3
+
+=== Choix de la modélisation
+
+image::3.1.png[Modélisation 4x4, width=300]
+
+=== Pseudo-code
+
+double score_affinité_3(hôte, visiteur):
+    score = score_affinité_1(hôte, visiteur)
+    si hôte.has_animal = vrai et visiteur.animal_allergy = vrai:
+        score = score + 25
+    si hôte.food != visiteur.food:
+        si hôte.food = "Omnivore" or visiteur.food_constraint = "Omnivore":
+            score = score + 15
+        sinon:
+            score = score + 25
+    retourner score
