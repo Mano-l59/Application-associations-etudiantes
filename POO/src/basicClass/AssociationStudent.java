@@ -3,7 +3,7 @@
  * @author <a>Clément Roty, Mano LEMAIRE, Timothée SERGHERAERT</a>
  * @version 1.0
  */
-package basicclass;
+package basicClass;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

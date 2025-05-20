@@ -1,19 +1,19 @@
-package basicclass;
+package basicClass;
 
-// import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-//import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.util.HashMap;
 
-public class testMethodeV2 {
+public class testAssociationStudent {
     public Student s1,s2,s3,s4,s5,s6;
     //pair<hote_guest>
-    public AssociationStudent pairS4_S2, pairS2_S6,pairS1_S5,pairS6_S4;
+    public AssociationStudent pairS1_S2,pairS2_S1,pairS3_S6,pairS4_S5,pairS4_S2, pairS2_S6;
     public HashMap<Constraints,String> mapContraintes1,mapContraintes2,mapContraintes3,mapContraintes4,mapContraintes5,mapContraintes6;
 
     @BeforeEach
@@ -33,17 +33,71 @@ public class testMethodeV2 {
         this.s6= new Student("Désesssspoire", "Léonardo", "other", LocalDate.of(2006,6,2), "Listenbourg");
         s6.setConstraintMap(mapContraintes6);
         
-        pairS1_S5=new AssociationStudent(s1, s5);
+        pairS1_S2=new AssociationStudent(s1, s2);
+        pairS2_S1=new AssociationStudent(s2, s1);
         pairS2_S6=new AssociationStudent(s2, s6);
+        pairS4_S5=new AssociationStudent(s4, s5);
         pairS4_S2 = new AssociationStudent(s4, s2);
-        pairS6_S4 = new AssociationStudent(s6, s4);
     }
     
     @Test
-    public void testFranceException(){
-        assertFalse(pairS1_S5.laFranceEstReloue()); // False = pas de problème (ils ont au moins un hobbie en commun)
-        assertFalse(pairS6_S4.laFranceEstReloue()); // False = aucun des 2 sont français.
-        assertTrue(pairS4_S2.laFranceEstReloue()); // True => n'ont aucun hobbie en commun
+        public void testGetAge() {
+        LocalDate date = LocalDate.of(2006,6,2);
+        assertEquals(date, s3.getBirthday());
+
+        int expectedAge = 18;
+        assertEquals(expectedAge, s6.getAge());
     }
+
+    @Test
+    public void testConstraintsMapInit() {
+        HashMap<Constraints, String> initMap = Student.constraintsMapInit();
+        assertEquals(7, initMap.size());
+        assertEquals("B", initMap.get(Constraints.GUEST_ANIMAL_ALLERGY));
+        assertEquals("T", initMap.get(Constraints.HOBBIES));
     }
+
+    @Test
+    public void testSetNewValeur() {
+        boolean changed = s1.setNewValeur(Constraints.PAIR_GENDER, "female");
+        assertTrue(changed);
+        assertEquals("female", s1.getConstraintsMap().get(Constraints.PAIR_GENDER));
+    }
+
+    // Tests AssociationStudent
+
+    @Test
+    public void testGetScoreAssociation() {
+        // s3 est allergique et s6 a un animal → association impossible
+        assertNull(pairS1_S2.getScoreAssociation());
+        assertNull(pairS2_S1.getScoreAssociation());
+        assertEquals(13,pairS4_S2.getScoreAssociation());
+    }
+
+    @Test
+    public void testFoodCompatibilityTrue() {
+        assertTrue(pairS2_S1.foodCompatibility());
+    }
+
+    @Test
+    public void testFoodCompatibilityFalse() {
+        assertFalse(pairS4_S5.foodCompatibility());
+    }
+
+    @Test
+    public void testScoreHobbie() {
+        assertEquals(pairS1_S2.scoreHobbie(),7);
+        assertEquals(pairS2_S6.scoreHobbie(),1);
+        
+    }
+
+    @Test
+    public void testDescribeLevelOfAffinity() {
+        pairS1_S2.getScoreAssociation();
+        pairS2_S1.getScoreAssociation();
+        pairS4_S2.getScoreAssociation();
+        assertEquals("Association impossible contrainte non respecté", pairS1_S2.describeLevelOfAffinity());
+        assertEquals("Association impossible contrainte non respecté", pairS2_S1.describeLevelOfAffinity());
+        assertEquals("Faible affinité", pairS4_S2.describeLevelOfAffinity());
+    }}
 

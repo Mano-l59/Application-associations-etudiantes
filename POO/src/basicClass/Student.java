@@ -1,4 +1,4 @@
-package basicclass;
+package basicClass;
 
 /**
  * La classe représente un étudiant et comprend des méthodes permettant d'obtenir son âge, obtenir son prénom, ses préférences...
