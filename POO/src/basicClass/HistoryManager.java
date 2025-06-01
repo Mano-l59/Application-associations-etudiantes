@@ -28,7 +28,6 @@ public class HistoryManager {
      * Charge les associations depuis le fichier binaire
      * @return Liste des associations chargées ou null si erreur
      */
-    @SuppressWarnings("unchecked")
     public List<AssociationStudent> loadAssociations() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(HISTORY_FILE))) {
             return (List<AssociationStudent>) ois.readObject();
