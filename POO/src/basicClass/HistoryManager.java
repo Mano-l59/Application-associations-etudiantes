@@ -4,12 +4,12 @@ import java.io.*;
 import java.util.List;
 
 /**
- * Classe pour gérer l'historique des associations par sérialisation binaire
+ * La classe permet de gérer l'historique des associations par sérialisation binaire
  * @author <a>Clément Roty, Mano LEMAIRE, Timothée SERGHERAERT</a>
  * @version 1.0
  */
 public class HistoryManager {
-    private static final String HISTORY_FILE = "history.dat";
+    private static final String HISTORY_FILE = "history";
     
     /**
      * Sauvegarde les associations dans un fichier binaire
