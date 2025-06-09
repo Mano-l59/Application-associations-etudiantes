@@ -1,4 +1,4 @@
-package basicClass;
+package basicclass;
 
 // import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,10 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import basicclass.AssociationStudent;
-import basicclass.Constraints;
-import basicclass.Country;
-import basicclass.Student;
+
 
 import java.time.LocalDate;
 import java.util.HashMap;
