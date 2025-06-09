@@ -1,0 +1,14 @@
+FORENAME;NAME;COUNTRY;BIRTH_DATE;GUEST_ANIMAL_ALLERGY;HOST_HAS_ANIMAL;GUEST_FOOD;HOST_FOOD;HOBBIES;GENDER;PAIR_GENDER;HISTORY
+KhargolHote; Maalik; GERMANY; 2008-01-22; no; yes; nonuts; nonuts,vegetarian; culture,sports,natation; female; female;
+KhargolInvite; Maalik; FRANCE; 2008-01-22; no; yes; nonuts; nonuts,vegetarian; culture,reading; female; female;
+Adonia; Digby; FRANCE; 2007-02-15; yes; no; ; ; ; other; female;
+Bellatrix; Castel; ITALY; 2007-11-02; no; yes; vegetarian; vegetarian; science,reading; female; ; other
+Argob; Khijazy; SPAIN; 2007-07-07; no; no; ; nonuts; reading,technology; male; ; same
+Lina; Dupuis; FRANCE; 2008-05-12; no; yes; nonuts; vegetarian; cinema,reading,tennis; female; male; same
+Marco; Rossi; ITALY; 2007-09-23; yes; no; vegetarian; vegetarian; football,science; male; female; other
+Sofia; Garcia; SPAIN; 2008-11-30; no; no; ; nonuts; swimming,technology; female; ; 
+Jonas; Müller; GERMANY; 2007-03-15; no; yes; nonuts,vegetarian; nonuts,vegetarian; chess,cycling; male; male; 
+Emma; Dubois; FRANCE; 2008-07-19; yes; no; ; ; painting,reading; female; other; 
+Pablo; Fernandez; SPAIN; 2007-12-02; no; no; ; nonuts; basketball,technology; male; ; same
+Giulia; Bianchi; ITALY; 2008-02-28; no; yes; vegetarian; vegetarian; music,science,cinema; female; female; 
+Lucas; Schmidt; GERMANY; 2007-10-10; no; yes; nonuts; nonuts,vegetarian; hiking,reading; male; female; other
