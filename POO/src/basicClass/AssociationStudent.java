@@ -1,14 +1,14 @@
-/**
- * La classe représente une association entre deux "Students"
- * @author <a>Clément Roty, Mano LEMAIRE, Timothée SERGHERAERT</a>
- * @version 1.0
- */
-package basicClass;
+package basicclass;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-public class AssociationStudent {
+import java.io.Serializable;
+/**
+ * La classe représente une association entre deux "Students"
+ * @author <a>Clément Roty, Mano LEMAIRE, Timothée SERGHERAERT</a>
+ * @version 2.0
+ */
+public class AssociationStudent implements Serializable {
     private final Student HOST;
     private final Student GUEST;
     
@@ -24,35 +24,38 @@ public class AssociationStudent {
      * @param guest L'étudiant invité
      * @since 1.0
      */
-    
     public AssociationStudent(Student hote, Student guest) {
         this.HOST = hote;
         this.GUEST = guest;
         this.scoreAssociation = 0;
     }
+    
+    /**
+     * Méthode static utilisée pour l'ajout du poids lors de la création du graphe biparti
+     * @param hote l'étudiant hote
+     * @param guest l'étudiant invité
+     * @return Retourne un score de type Double représentant l'affinité entre l'hôte et l'invité ou -999.9 si incompatible.
+     */
+    public static Double doubleTypeScore(Student hote, Student guest) {
+        AssociationStudent association = new AssociationStudent(hote, guest);
+        Integer a = association.getScoreAssociation();
+        if (a == null)
+            return 999.9;
+        else
+            return Double.valueOf(a.doubleValue());
+    } 
+    
     /**
      * Permet d'ajouter la valeur passée en paramètres à l'attribut scoreAssociation
      * @param scoreAssociation La valeur de type Integer qui va être ajoutée au score
      * @since 1.0
      */
-    private void setScoreAffinity(Integer scoreAssociation) {
+    public void setScoreAffinity(Integer scoreAssociation) {
         if(scoreAssociation==null){
             this.scoreAssociation=null; 
         }else{ 
             this.scoreAssociation = this.scoreAssociation+scoreAssociation;
         }
-    }
-
-    /**
-     * Fonction pour obtenir le scoreAssociation
-     * @return Le scoreAssociation de type Integer
-     * @since 1.0
-     */
-
-    public Integer getScoreAssociation() {
-        this.scoreAssociation=0;
-        this.scoreAffinity();
-        return this.scoreAssociation;
     }
 
     /**
@@ -123,18 +126,37 @@ public class AssociationStudent {
     }
 
     /**
+     * Méthode implémentant la contrainte d'avoir au moins 1 hobbie en commun entre l'hôte et l'invité, si l'un des deux est français.
+     * @return Retourne true si l'hôte et l'invité n'ont pas de hobby en commun, false sinon.
+     */
+    public Boolean laFranceEstReloue(){ 
+        if(HOST.getCountry().equals(Country.FR)|| GUEST.getCountry().equals(Country.FR)){
+            List<String> hoteHobbies = Arrays.asList(HOST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
+            List<String> guestHobbies = Arrays.asList(GUEST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
+            List<String> commonHobbieList = new ArrayList<>(hoteHobbies);
+            commonHobbieList.retainAll(guestHobbies);
+            return (commonHobbieList.isEmpty());
+        }else{
+            return false;
+        }
+    }
+
+    /**
      * Fonction principale du calcul du score d'affinité entre un hôte et un invité
      * @since 1.0
      */
 
-    private void scoreAffinity() {
-        if(HOST.getCountry().equals(GUEST.getCountry())){
+    public void scoreAffinity() {
+        if(HOST.getConstraintsMap().get(Constraints.HISTORY).equals("same")|| GUEST.getConstraintsMap().get(Constraints.HISTORY).equals("same")){
+            this.setScoreAffinity(-2);
+        }else if(HOST.getConstraintsMap().get(Constraints.HISTORY).equals("other")|| GUEST.getConstraintsMap().get(Constraints.HISTORY).equals("other")){
             this.setScoreAffinity(null);
-        }
-        else{
+        }else{
             if(HOST.getConstraintsMap().get(Constraints.HOST_HAS_ANIMAL).equals("yes") && GUEST.getConstraintsMap().get(Constraints.GUEST_ANIMAL_ALLERGY).equals("yes")){
             this.setScoreAffinity(null);
             }else if (!this.foodCompatibility()){
+                this.setScoreAffinity(null);
+            }else if(this.laFranceEstReloue()){
                 this.setScoreAffinity(null);
             }else{
                 if(HOST.getAge()==GUEST.getAge()){
@@ -154,6 +176,12 @@ public class AssociationStudent {
             }
         }
     }
+    
+    /**
+     * Méthode permettant de décrire le niveau d'affinité entre l'hôte et l'invité
+     * en fonction du score d'association calculé.
+     * @return Retourne une chaîne de caractères décrivant le niveau d'affinité.
+     */
     public String describeLevelOfAffinity(){
         String levelAffinityString ="";
         if(this.scoreAssociation==null){
@@ -166,21 +194,73 @@ public class AssociationStudent {
         }
         return levelAffinityString;
     }
-    public String toString(boolean full){
-        if(full) return HOST.toStringComplete()+"\n\tEST L'INVITE SUIVANT CHEZ LUI :\n"+GUEST.toStringComplete()+"\n L'association produit un score de : "+this.getScoreAssociation().toString()+"\n On qualifie alors l'association de : "+this.describeLevelOfAffinity();
-        else return HOST.toString()+"\n\tEST L'INVITE SUIVANT CHEZ LUI :\n"+GUEST.toString()+"\n L'association produit un score de : "+this.getScoreAssociation().toString()+"\n On qualifie alors l'association de : "+this.describeLevelOfAffinity();
+
+    /**
+     * Méthode toString pour afficher les informations de l'association entre l'hôte et l'invité
+     * @return Retourne une chaîne de caractères formatée représentant l'association sous la forme suivante :
+     * `"HOST | SCORE | GUEST | LEVEL OF AFFINITY"`
+     */
+    @Override
+    public String toString() {
+        Integer score = this.getScoreAssociation();
+        String scoreStr;
+        if (score == null) {
+            scoreStr = "null";
+        } else {
+            scoreStr = score.toString();
+        }
+        // Format tabulaire minimaliste
+        return String.format("%-30s | %-5s | %-30s | %s", HOST.toString(), scoreStr, GUEST.toString(), this.describeLevelOfAffinity());
     }
 
-    public Boolean laFranceEstReloue(){ 
-        if(HOST.getCountry().equals("France")|| GUEST.getCountry().equals("France")){
-            List<String> hoteHobbies = Arrays.asList(HOST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
-            List<String> guestHobbies = Arrays.asList(GUEST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
-            List<String> commonHobbieList = new ArrayList<>(hoteHobbies);
-            commonHobbieList.retainAll(guestHobbies);
-            return (commonHobbieList.isEmpty());
-        }else{
-            return false;
+    /**
+     * Méthode toString pour afficher en détails les informations de l'association entre l'hôte et l'invité
+     * @param full Si true, affiche les informations complètes de l'association, sinon affiche un format minimaliste.
+     * @return Retourne une chaîne de caractères formatée représentant l'association.
+     */
+    public String toString(boolean full){
+        Integer score = this.getScoreAssociation();
+        String scoreStr;
+        if (score == null) {
+            scoreStr = "null";
+        } else {
+            scoreStr = score.toString();
         }
+        if(full){
+            return String.format("%-50s | %-5s | %-50s | %s",HOST.toStringComplete(), scoreStr, GUEST.toStringComplete(), this.describeLevelOfAffinity());
+        }else{
+            return this.toString();
+        }
+    }
+
+    /**
+     * Fonction pour obtenir l'hôte de l'association
+     * @return L'hôte de type Student
+     * @since 1.0
+     */
+    public Student getHost() {
+        return this.HOST;
+    }
+
+    /**
+     * Fonction pour obtenir l'invité de l'association
+     * @return L'invité de type Student
+     * @since 1.0
+     */
+    public Student getGuest() {
+        return this.GUEST;
+    }
+    
+    /**
+     * Fonction pour obtenir le scoreAssociation
+     * @return Le scoreAssociation de type Integer
+     * @since 1.0
+     */
+
+    public Integer getScoreAssociation() {
+        this.scoreAssociation=0;
+        this.scoreAffinity();
+        return this.scoreAssociation;
     }
 
 }
