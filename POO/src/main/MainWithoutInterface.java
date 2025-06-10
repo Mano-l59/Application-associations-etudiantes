@@ -68,9 +68,7 @@ public class MainWithoutInterface {
                         break;
                     }
                     // Affichage des pays disponibles
-                    Set<Country> countries = students.stream()
-                            .map(Student::getCountry)
-                            .collect(Collectors.toSet());
+                    Set<Country> countries = students.stream().map(Student::getCountry).collect(Collectors.toSet());
                     List<Country> countryList = new ArrayList<>(countries);
                     System.out.println("\nPays disponibles :");
                     for (int i = 0; i < countryList.size(); i++) {
