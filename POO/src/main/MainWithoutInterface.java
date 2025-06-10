@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  */
 public class MainWithoutInterface {
     public static String csvFileStudent = "students.csv";
-    public static String dataHistorique = "data/historique.dat";
+    public static String dataHistorique = "POO/data/historique.dat";
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         StudentManager manager = new StudentManager();
