@@ -9,11 +9,14 @@ import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import basicclass.*;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import manager.StudentManager;
 
 public class MainApp extends Application{
     
@@ -36,23 +39,33 @@ public class MainApp extends Application{
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(50));
         root.setStyle("-fx-background-color: #4A4A8A;");
-        
-        Label title = new Label("Sélection csv");
+
+        Label title = new Label("Sélection du fichier CSV");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        
+
         VBox fileSelection = new VBox(10);
         fileSelection.setAlignment(Pos.CENTER);
         fileSelection.setStyle("-fx-background-color: #6A6AAA; -fx-padding: 20;");
-        
-        Label fileLabel = new Label("Veuillez sélectionner votre csv :");
+
+        Label fileLabel = new Label("Veuillez sélectionner votre fichier CSV :");
         fileLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
-        
+
         HBox fileBox = new HBox(10);
         fileBox.setAlignment(Pos.CENTER);
         TextField fileField = new TextField();
-        fileField.setPrefWidth(200);
-        Button browseButton = new Button("...");
-        
+        fileField.setPrefWidth(300);
+        Button browseButton = new Button("Parcourir");
+
+        final File[] selectedFile = new File[1];
+
+        Label sizeLabel = new Label("Taille du csv : ");
+        sizeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+
+        Label countLabel = new Label("Nombre d'élèves : ");
+        countLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+
+        StudentManager studentManager = new StudentManager();
+
         browseButton.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.getExtensionFilters().add(
@@ -61,35 +74,33 @@ public class MainApp extends Application{
             File file = fileChooser.showOpenDialog(primaryStage);
             if(file != null){
                 fileField.setText(file.getAbsolutePath());
-                loadStudentsFromCSV(file);
+                selectedFile[0] = file;
+                try {
+                    studentManager.loadStudentsFromCsv(file.getAbsolutePath());
+                    students = studentManager.getStudents();
+                } catch (Exception ex) {
+                    students.clear();
+                }
+                // Mise à jour dynamique des labels après sélection
+                sizeLabel.setText("Taille du csv : " + file.length() + " octets");
+                countLabel.setText("Nombre d'élèves : " + students.size());
             }
         });
-        
+
         fileBox.getChildren().addAll(fileField, browseButton);
-        
-        Label sizeLabel = new Label("Taille du csv : ...");
-        sizeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-        
-        Label countLabel = new Label("Nombre d'élèves : ...");
-        countLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-        
-        Label dotLabel = new Label("... :");
-        dotLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-        
-        fileSelection.getChildren().addAll(fileLabel, fileBox, sizeLabel, countLabel, dotLabel);
-        
+
         Button validateButton = new Button("Valider");
-        validateButton.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font²-size: 14px;");
+        validateButton.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
         validateButton.setOnAction(e -> {
             if(!students.isEmpty()){
                 showGestionElevesScene();
-            } else{
-                showAlert("Erreur", "Veuillez d'abord sélectionner un fichier CSV valide.");
             }
         });
-        
+
+        fileSelection.getChildren().addAll(fileLabel, fileBox, sizeLabel, countLabel);
+
         root.getChildren().addAll(title, fileSelection, validateButton);
-        
+
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setScene(scene);
     }
@@ -98,98 +109,86 @@ public class MainApp extends Application{
     private void showGestionElevesScene(){
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #4A4A8A;");
-        
+
         Label title = new Label("Gestion des élèves");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
         BorderPane.setAlignment(title, Pos.CENTER);
         BorderPane.setMargin(title, new Insets(20));
         root.setTop(title);
-        
-        HBox centerBox = new HBox(20);
-        centerBox.setAlignment(Pos.CENTER);
-        centerBox.setPadding(new Insets(20));
-        
-        VBox leftColumn = new VBox(10);
-        leftColumn.setStyle("-fx-background-color: #6A6AAA; -fx-padding: 15;");
-        leftColumn.setPrefWidth(300);
-        
-        HBox leftHeader = new HBox(10);
-        leftHeader.setAlignment(Pos.CENTER_LEFT);
-        Label leftCount = new Label("Nombre d'élèves : " + students.size());
-        leftCount.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-        CheckBox leftCheckbox = new CheckBox();
-        leftHeader.getChildren().addAll(leftCount, leftCheckbox);
-        
-        ListView<String> leftList = new ListView<>();
-        leftList.setPrefHeight(200);
-        for(Student student : students){
-            leftList.getItems().add(student.toString());
+
+        VBox pairsVBox = new VBox(15);
+        pairsVBox.setAlignment(Pos.CENTER);
+        pairsVBox.setPadding(new Insets(20));
+
+        List<AssociationStudent> pairs = new ArrayList<>();
+        for (int i = 0; i + 1 < students.size(); i += 2){
+            pairs.add(new AssociationStudent(students.get(i), students.get(i + 1)));
         }
-        leftColumn.getChildren().addAll(leftHeader, leftList);
-        
-        VBox rightColumn = new VBox(10);
-        rightColumn.setStyle("-fx-background-color: #6A6AAA; -fx-padding: 15;");
-        rightColumn.setPrefWidth(300);
-        
-        HBox rightHeader = new HBox(10);
-        rightHeader.setAlignment(Pos.CENTER_LEFT);
-        Label rightCount = new Label("Nombre d'élèves sélectionnés : 0");
-        rightCount.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-        CheckBox rightCheckbox = new CheckBox();
-        rightHeader.getChildren().addAll(rightCount, rightCheckbox);
-        
-        ListView<String> rightList = new ListView<>();
-        rightList.setPrefHeight(200);
-        
-        rightColumn.getChildren().addAll(rightHeader, rightList);
-        
-        centerBox.getChildren().addAll(leftColumn, rightColumn);
-        root.setCenter(centerBox);
-        
-        HBox bottomBox = new HBox(20);
-        bottomBox.setAlignment(Pos.CENTER);
-        bottomBox.setPadding(new Insets(20));
-        
-        Label constraintLabel = new Label("Nombre de contraintes réalisatoires non respectées :");
-        constraintLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-        
-        CheckBox constraintCheck = new CheckBox();
-        
-        VBox constraintBox = new VBox(5);
-        constraintBox.getChildren().addAll(constraintLabel, constraintCheck);
-        
-        Label problemLabel1 = new Label("Problème de contrainte pour : Élève 1 et Élève 2");
-        problemLabel1.setStyle("-fx-text-fill: white; -fx-font-size: 10px;");
-        
-        Label problemLabel2 = new Label("Problème de contrainte pour : Élève 4 et Élève 6");
-        problemLabel2.setStyle("-fx-text-fill: white; -fx-font-size: 10px;");
-        
-        VBox problemBox = new VBox(2);
-        problemBox.getChildren().addAll(problemLabel1, problemLabel2);
-        
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(Pos.CENTER);
-        
-        Button bloquerButton = new Button("Bloquer\nadolescent");
-        bloquerButton.setStyle("-fx-background-color: #333333; -fx-text-fill: white;");
+
+        for (AssociationStudent assoc : pairs){
+            HBox pairBox = new HBox(30);
+            pairBox.setAlignment(Pos.CENTER);
+            pairBox.setStyle("-fx-background-color: #6A6AAA; -fx-padding: 10; -fx-background-radius: 8; -fx-cursor: hand;");
+
+            VBox hostBox = new VBox(3);
+            hostBox.setAlignment(Pos.CENTER);
+            hostBox.getChildren().addAll(
+                createInfoLabel("Hôte : " + assoc.getHost().getName() + " " + assoc.getHost().getForename()),
+                createInfoLabel("Genre : " + assoc.getHost().getGender()),
+                createInfoLabel("Âge : " + assoc.getHost().getAge()),
+                createInfoLabel("Pays : " + assoc.getHost().getCountry().getFullName())
+            );
+
+            VBox guestBox = new VBox(3);
+            guestBox.setAlignment(Pos.CENTER);
+            guestBox.getChildren().addAll(
+                createInfoLabel("Invité : " + assoc.getGuest().getName() + " " + assoc.getGuest().getForename()),
+                createInfoLabel("Genre : " + assoc.getGuest().getGender()),
+                createInfoLabel("Âge : " + assoc.getGuest().getAge()),
+                createInfoLabel("Pays : " + assoc.getGuest().getCountry().getFullName())
+            );
+
+            VBox arrowBox = new VBox();
+            arrowBox.setAlignment(Pos.CENTER);
+            Label arrow = new Label("⇄");
+            arrow.setStyle("-fx-text-fill: white; -fx-font-size: 36px;");
+            arrowBox.getChildren().add(arrow);
+
+            pairBox.getChildren().addAll(hostBox, arrowBox, guestBox);
+
+            // Action : afficher la scène détaillée pour cette association
+            pairBox.setOnMouseClicked(e -> showInformationsCompletesScene(assoc.getHost(), assoc.getGuest()));
+
+            pairsVBox.getChildren().add(pairBox);
+        }
+
+        ScrollPane scrollPane = new ScrollPane(pairsVBox);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+
+        root.setCenter(scrollPane);
+
+        // Boutons de navigation en bas (fond noir, police blanche)
+        HBox navButtons = new HBox(20);
+        navButtons.setAlignment(Pos.CENTER);
+        navButtons.setPadding(new Insets(20));
+
+        Button bloquerButton = new Button("Bloquer adolescent");
+        bloquerButton.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-size: 14px;");
         bloquerButton.setOnAction(e -> showBloquerAdolescentScene());
-        
-        Button ajusterButton = new Button("Ajuster\npondérations");
-        ajusterButton.setStyle("-fx-background-color: #333333; -fx-text-fill: white;");
-        ajusterButton.setOnAction(e -> showAjusterPonderationsScene());
-        
-        Button fixerButton = new Button("Fixer\naffectation");
-        fixerButton.setStyle("-fx-background-color: #333333; -fx-text-fill: white;");
-        fixerButton.setOnAction(e -> showFixerAffectationScene());
-        
-        buttonBox.getChildren().addAll(bloquerButton, ajusterButton, fixerButton);
-        
-        VBox bottomContainer = new VBox(10);
-        bottomContainer.setAlignment(Pos.CENTER);
-        bottomContainer.getChildren().addAll(constraintBox, problemBox, buttonBox);
-        
-        root.setBottom(bottomContainer);
-        
+
+        Button ponderationsButton = new Button("Ajuster pondérations");
+        ponderationsButton.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-size: 14px;");
+        ponderationsButton.setOnAction(e -> showAjusterPonderationsScene());
+
+        Button affectationButton = new Button("Fixer affectation");
+        affectationButton.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-size: 14px;");
+        affectationButton.setOnAction(e -> showFixerAffectationScene());
+
+        navButtons.getChildren().addAll(bloquerButton, ponderationsButton, affectationButton);
+
+        root.setBottom(navButtons);
+
         Scene scene = new Scene(root, 1000, 600);
         primaryStage.setScene(scene);
     }
@@ -297,111 +296,144 @@ public class MainApp extends Application{
     }
     
     // Scène 5: Fixer affectation
-    private void showFixerAffectationScene(){
+    private void showFixerAffectationScene() {
         VBox root = new VBox(20);
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(50));
         root.setStyle("-fx-background-color: #4A4A8A;");
-        
+
         Label title = new Label("Fixer affectation");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        
+
         VBox associations = new VBox(10);
         associations.setStyle("-fx-background-color: #6A6AAA; -fx-padding: 20;");
-        
-        for(int i = 1; i <= 4; i++){
+        associations.setAlignment(Pos.CENTER);
+
+        // Affichage dynamique des associations selon la liste d'élèves
+        int nbPairs = students.size() / 2;
+        for (int i = 0; i < nbPairs; i++) {
             HBox assocBox = new HBox(10);
-            assocBox.setAlignment(Pos.CENTER_LEFT);
-            
-            Label assocLabel = new Label("Association n°" + i + " :");
+            assocBox.setAlignment(Pos.CENTER);
+
+            Label assocLabel = new Label("Association n°" + (i + 1) + " :");
             assocLabel.setStyle("-fx-text-fill: white;");
             assocLabel.setPrefWidth(120);
-            
+
             ComboBox<String> combo1 = new ComboBox<>();
-            combo1.getItems().addAll("E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8");
-            combo1.setValue("E" + i);
-            combo1.setPrefWidth(60);
-            
-            Label arrow = new Label("→");
-            arrow.setStyle("-fx-text-fill: white;");
-            
             ComboBox<String> combo2 = new ComboBox<>();
-            combo2.getItems().addAll("E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8");
-            combo2.setValue("E" +(i + 4));
-            combo2.setPrefWidth(60);
-            
+            for (int j = 0; j < students.size(); j++) {
+                String label = "E" + (j + 1) + " - " + students.get(j).getName() + " " + students.get(j).getForename();
+                combo1.getItems().add(label);
+                combo2.getItems().add(label);
+            }
+            combo1.setValue(combo1.getItems().get(i));
+            combo1.setPrefWidth(180);
+            combo2.setValue(combo2.getItems().get(i + nbPairs));
+            combo2.setPrefWidth(180);
+
+            Label arrow = new Label("→");
+            arrow.setStyle("-fx-text-fill: white; -fx-font-size: 24px;");
+
             assocBox.getChildren().addAll(assocLabel, combo1, arrow, combo2);
             associations.getChildren().add(assocBox);
         }
-        
+
+        // Boutons de navigation en bas (fond noir, police blanche)
+        HBox navButtons = new HBox(20);
+        navButtons.setAlignment(Pos.CENTER);
+        navButtons.setPadding(new Insets(20));
+
+        Button retourButton = new Button("Retour");
+        retourButton.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-size: 14px;");
+        retourButton.setOnAction(e -> showGestionElevesScene());
+
         Button terminerButton = new Button("Terminer");
-        terminerButton.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
-        terminerButton.setOnAction(e -> showInformationsCompletesScene());
-        
-        root.getChildren().addAll(title, associations, terminerButton);
-        
-        Scene scene = new Scene(root, 600, 400);
+        terminerButton.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-size: 14px;");
+        terminerButton.setOnAction(e -> {
+            // On affiche la première association détaillée si dispo
+            if (students.size() >= 2) {
+                showInformationsCompletesScene(students.get(0), students.get(1));
+            }
+        });
+
+        navButtons.getChildren().addAll(retourButton, terminerButton);
+
+        root.getChildren().addAll(title, associations, navButtons);
+
+        Scene scene = new Scene(root, 800, 500);
         primaryStage.setScene(scene);
     }
     
     // Scène 6: Informations complètes des étudiants
-    private void showInformationsCompletesScene(){
+    private void showInformationsCompletesScene(Student eleve1, Student eleve2){
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #4A4A8A;");
-        
+
         Label title = new Label("Informations complètes des étudiants");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
         BorderPane.setAlignment(title, Pos.CENTER);
         BorderPane.setMargin(title, new Insets(20));
         root.setTop(title);
-        
+
         HBox centerBox = new HBox(20);
         centerBox.setAlignment(Pos.CENTER);
         centerBox.setPadding(new Insets(20));
-        
+
         VBox eleve1Box = new VBox(10);
         eleve1Box.setStyle("-fx-background-color: #6A6AAA; -fx-padding: 15;");
         eleve1Box.setPrefWidth(350);
-        
-        Label eleve1Title = new Label("Élève 1");
+
+        Label eleve1Title = new Label("Élève ID " + (eleve1 != null ? eleve1.getId() : ""));
         eleve1Title.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-        
+
         VBox eleve1Info = new VBox(5);
-        eleve1Info.getChildren().addAll(
-            createInfoLabel("Nom :"),
-            createInfoLabel("Forename :"),
-            createInfoLabel("... :")
-        );
-        
+        if (eleve1 != null) {
+            eleve1Info.getChildren().addAll(
+                createInfoLabel("Nom : " + eleve1.getName()),
+                createInfoLabel("Prénom : " + eleve1.getForename()),
+                createInfoLabel("Genre : " + eleve1.getGender()),
+                createInfoLabel("Date de naissance : " + eleve1.getBirthday()),
+                createInfoLabel("Pays : " + eleve1.getCountry()),
+                createInfoLabel("Contraintes : " + eleve1.getConstraintsMap())
+            );
+        }
         eleve1Box.getChildren().addAll(eleve1Title, eleve1Info);
-        
+
         VBox eleve2Box = new VBox(10);
         eleve2Box.setStyle("-fx-background-color: #6A6AAA; -fx-padding: 15;");
         eleve2Box.setPrefWidth(350);
-        
-        Label eleve2Title = new Label("Élève 2");
+
+        Label eleve2Title = new Label("Élève ID " + (eleve2 != null ? eleve2.getId() : ""));
         eleve2Title.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-        
+
         VBox eleve2Info = new VBox(5);
-        eleve2Info.getChildren().addAll(
-            createInfoLabel("Nom :"),
-            createInfoLabel("Forename :"),
-            createInfoLabel("... :")
-        );
-        
+        if (eleve2 != null) {
+            eleve2Info.getChildren().addAll(
+                createInfoLabel("Nom : " + eleve2.getName()),
+                createInfoLabel("Prénom : " + eleve2.getForename()),
+                createInfoLabel("Genre : " + eleve2.getGender()),
+                createInfoLabel("Date de naissance : " + eleve2.getBirthday()),
+                createInfoLabel("Pays : " + eleve2.getCountry()),
+                createInfoLabel("Contraintes : " + eleve2.getConstraintsMap())
+            );
+        }
         eleve2Box.getChildren().addAll(eleve2Title, eleve2Info);
-        
+
         centerBox.getChildren().addAll(eleve1Box, eleve2Box);
         root.setCenter(centerBox);
-        
-        Button terminerButton = new Button("Terminer");
-        terminerButton.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
-        terminerButton.setOnAction(e -> showSelectionCSVScene());
-        
-        BorderPane.setAlignment(terminerButton, Pos.CENTER);
-        BorderPane.setMargin(terminerButton, new Insets(20));
-        root.setBottom(terminerButton);
-        
+
+        // Bouton retour en bas
+        HBox navButtons = new HBox(20);
+        navButtons.setAlignment(Pos.CENTER);
+        navButtons.setPadding(new Insets(20));
+
+        Button retourButton = new Button("Retour");
+        retourButton.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-size: 14px;");
+        retourButton.setOnAction(e -> showGestionElevesScene());
+
+        navButtons.getChildren().add(retourButton);
+        root.setBottom(navButtons);
+
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setScene(scene);
     }
