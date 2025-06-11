@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox style="-fx-background-color: linear-gradient(to bottom, #4A5CDB, #7B8FE8);" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="your.package.SelectionCSVController">
+   <children>
+      <Label text="Sélection .csv" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font>
+      </Label>
+      <Region prefHeight="20.0" />
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+         <children>
+            <Label text="Veuillez sélectionner votre .csv :" textFill="WHITE" />
+            <Button fx:id="selectFileButton" mnemonicParsing="false" onAction="#selectFile" />
+         </children>
+      </HBox>
+      <Region prefHeight="20.0" />
+      <Label text="Taille du .csv : ..." textFill="WHITE" />
+      <Region prefHeight="10.0" />
+      <Label text="Nombre d'élèves : ..." textFill="WHITE" />
+      <Region prefHeight="10.0" />
+      <Label text="... :" textFill="WHITE" />
+      <Region prefHeight="30.0" />
+      <HBox alignment="CENTER">
+         <children>
+            <Button fx:id="validateButton" mnemonicParsing="false" onAction="#validate" text="Valider" />
+         </children>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+</VBox>
