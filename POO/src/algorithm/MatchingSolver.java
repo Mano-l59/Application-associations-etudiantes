@@ -105,17 +105,19 @@ public class MatchingSolver {
             Student source = graph.getEdgeSource(edge);
             Student target = graph.getEdgeTarget(edge);
             // On suppose que source est un hôte et target un invité, ou l'inverse
+            AssociationStudent assoc;
             if (this.hosts.contains(source) && this.guests.contains(target)) {
-                this.associations.add(new AssociationStudent(source, target));
+                assoc = new AssociationStudent(source, target);
             } else if (this.hosts.contains(target) && this.guests.contains(source)) {
-                this.associations.add(new AssociationStudent(target, source));
+                assoc = new AssociationStudent(target, source);
+            } else {
+                continue;
             }
-        }
-        Iterator<AssociationStudent> it = this.associations.iterator();
-        while (it.hasNext()) {
-            AssociationStudent assoReelle = it.next();
-            if(assoReelle.getHost().getId() == -999 || assoReelle.getGuest().getId() == -999) {
-                it.remove();
+            // Ajoute uniquement si l'association est valide (scoreAssociation != null et pas fictif)
+            if (assoc.getHost() != null && assoc.getGuest() != null
+                && assoc.getHost().getId() != -999 && assoc.getGuest().getId() != -999
+                && assoc.getScoreAssociation() != null) {
+                this.associations.add(assoc);
             }
         }
         return this.associations;

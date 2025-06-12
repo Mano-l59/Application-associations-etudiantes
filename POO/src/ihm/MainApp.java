@@ -26,8 +26,6 @@ public class MainApp extends Application {
     private List<String> failedStudents = new ArrayList<>();
     private List<AssociationStudent> associations = new ArrayList<>();
     private HistoryManager historyManager = new HistoryManager();
-    private File loadedFile = null;
-    private static final String HISTORIQUE_FILE = "POO/data/historique.dat";
 
     // Champs pour la configuration
     private Country selectedHost = null;
@@ -38,7 +36,13 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
+        // Charge l'historique dès le début
+        historyManager.loadFromFile("POO/data/historique.dat");
         primaryStage.setTitle("Gestion des étudiants");
+        primaryStage.setMinWidth(900);
+        primaryStage.setMinHeight(650);
+        primaryStage.setWidth(1100);
+        primaryStage.setHeight(750);
         showSelectionCSVScene();
         primaryStage.show();
     }
@@ -107,7 +111,7 @@ public class MainApp extends Application {
 
         root.getChildren().addAll(title, fileSelection, validateButton);
 
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, primaryStage.getWidth(), primaryStage.getHeight());
         primaryStage.setScene(scene);
     }
 
@@ -124,14 +128,14 @@ public class MainApp extends Application {
         root.setTop(title);
 
         // Étudiants valides (gauche)
-        VBox studentsBox = new VBox(15);
-        studentsBox.setPadding(new Insets(20));
+        VBox studentsBox = new VBox(8); // réduit l'espacement
+        studentsBox.setPadding(new Insets(20, 0, 20, 0)); // padding horizontal supprimé
         studentsBox.setAlignment(Pos.TOP_CENTER);
-        studentsBox.setStyle("-fx-background-color: #6A6AAA; -fx-background-radius: 10;");
+        studentsBox.setStyle("-fx-background-color: #6A6AAA;"); // border-radius supprimé
         studentsBox.getChildren().add(createInfoLabel("Étudiants valides (" + students.size() + ") :"));
         for (Student student : students) {
             VBox studentCard = new VBox(3);
-            studentCard.setStyle("-fx-background-color: #ffffff22; -fx-background-radius: 8; -fx-padding: 8;");
+            studentCard.setStyle("-fx-background-color: #ffffff22; -fx-padding: 8;"); // border-radius supprimé
             studentCard.setAlignment(Pos.CENTER_LEFT);
             studentCard.getChildren().addAll(
                 createInfoLabel("Nom : " + student.getName()),
@@ -144,18 +148,17 @@ public class MainApp extends Application {
         ScrollPane studentsScroll = new ScrollPane(studentsBox);
         studentsScroll.setFitToWidth(true);
         studentsScroll.setStyle("-fx-background: transparent;");
-        studentsScroll.setPrefWidth(350);
-        root.setLeft(studentsScroll);
+        studentsScroll.setPrefWidth(320); // réduit la largeur
 
         // Étudiants rejetés (droite)
-        VBox failedBox = new VBox(15);
-        failedBox.setPadding(new Insets(20));
+        VBox failedBox = new VBox(8); // réduit l'espacement
+        failedBox.setPadding(new Insets(20, 0, 20, 0)); // padding horizontal supprimé
         failedBox.setAlignment(Pos.TOP_CENTER);
-        failedBox.setStyle("-fx-background-color: #6A6AAA; -fx-background-radius: 10;");
+        failedBox.setStyle("-fx-background-color: #6A6AAA;"); // border-radius supprimé
         failedBox.getChildren().add(createInfoLabel("Étudiants rejetés (" + failedStudents.size() + ") :"));
         for (String line : failedStudents) {
             VBox failedCard = new VBox(3);
-            failedCard.setStyle("-fx-background-color: #ff000022; -fx-background-radius: 8; -fx-padding: 8;");
+            failedCard.setStyle("-fx-background-color: #ff000022; -fx-padding: 8;"); // border-radius supprimé
             failedCard.setAlignment(Pos.CENTER_LEFT);
             failedCard.getChildren().add(createInfoLabel(line));
             failedBox.getChildren().add(failedCard);
@@ -163,8 +166,14 @@ public class MainApp extends Application {
         ScrollPane failedScroll = new ScrollPane(failedBox);
         failedScroll.setFitToWidth(true);
         failedScroll.setStyle("-fx-background: transparent;");
-        failedScroll.setPrefWidth(350);
-        root.setRight(failedScroll);
+        failedScroll.setPrefWidth(320); // réduit la largeur
+
+        // Les deux listes rapprochées dans un HBox
+        HBox centerBox = new HBox(20, studentsScroll, failedScroll); // réduit l'espacement à 20
+        centerBox.setAlignment(Pos.TOP_CENTER);
+        centerBox.setPadding(new Insets(0, 0, 0, 0)); // pas de padding autour
+
+        root.setCenter(centerBox);
 
         // Boutons en bas
         HBox navButtons = new HBox(20);
@@ -179,7 +188,7 @@ public class MainApp extends Application {
         navButtons.getChildren().addAll(retourButton, continuerButton);
         root.setBottom(navButtons);
 
-        Scene scene = new Scene(root, 900, 600);
+        Scene scene = new Scene(root, primaryStage.getWidth(), primaryStage.getHeight());
         primaryStage.setScene(scene);
     }
 
@@ -188,141 +197,224 @@ public class MainApp extends Application {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #4A4A8A;");
 
-        // Titre
+        // Haut : Label principal
         Label title = new Label("Menu principal");
-        title.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        BorderPane.setAlignment(title, Pos.CENTER);
-        BorderPane.setMargin(title, new Insets(20));
-        root.setTop(title);
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;");
+        StackPane topBar = new StackPane(title);
+        topBar.setPadding(new Insets(20));
+        root.setTop(topBar);
 
-        // Centre : résultats d'appariement ou placeholder
-        BorderPane centerPane = new BorderPane();
-        centerPane.setStyle("-fx-background-color: #6A6AAA; -fx-background-radius: 10;");
-        centerPane.setPadding(new Insets(30));
-
-        VBox resultsBox = new VBox(20);
-        resultsBox.setAlignment(Pos.CENTER);
-        resultsBox.setPadding(new Insets(10));
-
-        // Affichage dynamique des résultats
-        Runnable updateResults = () -> {
-            resultsBox.getChildren().clear();
-            if (associations.isEmpty()) {
-                Label noMatch = new Label("Aucun matching exécuté pour l'instant.");
-                noMatch.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
-                resultsBox.getChildren().add(noMatch);
-            } else {
-                for (AssociationStudent assoc : associations) {
-                    HBox pairBox = new HBox(30);
-                    pairBox.setAlignment(Pos.CENTER);
-                    pairBox.setPadding(new Insets(12));
-                    pairBox.setStyle(
-                        "-fx-background-color: rgba(255,255,255,0.13);"
-                        + "-fx-background-radius: 16;"
-                        + "-fx-border-radius: 16;"
-                        + "-fx-border-color: #ffffff44;"
-                        + "-fx-border-width: 1;"
-                        + "-fx-cursor: hand;"
-                    );
-
-                    VBox hostBox = new VBox(3,
-                        createInfoLabel("Hôte : " + assoc.getHost().getName() + " " + assoc.getHost().getForename()),
-                        createInfoLabel(assoc.getHost().getCountry().getFullName())
-                    );
-                    hostBox.setAlignment(Pos.CENTER_LEFT);
-
-                    VBox guestBox = new VBox(3,
-                        createInfoLabel("Invité : " + assoc.getGuest().getName() + " " + assoc.getGuest().getForename()),
-                        createInfoLabel(assoc.getGuest().getCountry().getFullName())
-                    );
-                    guestBox.setAlignment(Pos.CENTER_LEFT);
-
-                    Label arrow = new Label("\u21C4"); // ⇄
-                    arrow.setStyle("-fx-text-fill: white; -fx-font-size: 36px;");
-
-                    pairBox.getChildren().addAll(hostBox, arrow, guestBox);
-                    pairBox.setOnMouseClicked(e -> showAssociationDetailsScene(assoc));
-                    resultsBox.getChildren().add(pairBox);
-                }
-            }
-        };
-        updateResults.run();
-
-        ScrollPane scrollPane = new ScrollPane(resultsBox);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent;");
-        centerPane.setCenter(scrollPane);
-
-        // Bouton Export en bas à droite de la box résultats
-        Button exportButton = new Button("Exporter en CSV");
-        exportButton.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
-        exportButton.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setInitialFileName("appariement.csv");
-            File file = fileChooser.showSaveDialog(primaryStage);
-            if (file != null) {
-                try {
-                    CSVExport.exportMatchingToCsv(associations, file.getAbsolutePath().replace(".csv", ""));
-                    showAlert("Export réussi", "Le fichier a été exporté avec succès !");
-                } catch (IOException ex) {
-                    showAlert("Erreur", "Erreur lors de l'export : " + ex.getMessage());
-                }
-            }
-        });
-        HBox exportBox = new HBox(exportButton);
-        exportBox.setAlignment(Pos.BOTTOM_RIGHT);
-        exportBox.setPadding(new Insets(10, 10, 0, 0));
-        centerPane.setBottom(exportBox);
-
-        root.setCenter(centerPane);
-
-        // Boutons en bas
+        // Bas : Boutons nécessaires
         Button voirElevesBtn = new Button("Voir étudiants");
         voirElevesBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
-        voirElevesBtn.setOnAction(e -> showGestionElevesScene());
+        voirElevesBtn.setOnAction(e -> showListeEtudiantsScene());
 
         Button changerCsvBtn = new Button("Changer CSV");
         changerCsvBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
         changerCsvBtn.setOnAction(e -> showSelectionCSVScene());
 
+        Button configBtn = new Button("Configuration");
+        configBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
         Button executerBtn = new Button("Exécuter");
         executerBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
         executerBtn.setDisable(!configDone);
-
-        executerBtn.setOnAction(e -> {
-            if (selectedHost != null && selectedGuest != null && selectedAlgo != null) {
-                // Exécute le matching et met à jour resultsBox
-                List<Student> hostsList = students.stream().filter(s -> s.getCountry().equals(selectedHost)).toList();
-                List<Student> guestsList = students.stream().filter(s -> s.getCountry().equals(selectedGuest)).toList();
-                Set<Student> hosts = new HashSet<>(hostsList);
-                Set<Student> guests = new HashSet<>(guestsList);
-
-                historyManager.loadFromFile(HISTORIQUE_FILE);
-                MatchingSolver solver = new MatchingSolver(hosts, guests, historyManager);
-                associations = solver.algorithmMatching(selectedAlgo);
-                historyManager.addOrReplaceMatching(selectedHost, selectedGuest, associations);
-                historyManager.saveToFile(HISTORIQUE_FILE);
-
-                updateResults.run();
-            } else {
-                showAlert("Configuration incomplète", "Veuillez configurer les paramètres avant d'exécuter.");
-            }
-        });
+        configBtn.setOnAction(e -> showConfigurationDialog(executerBtn));
 
         Button historiqueBtn = new Button("Voir historique");
         historiqueBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
         historiqueBtn.setOnAction(e -> showHistoriqueScene());
 
-        Button configBtn = new Button("Configuration");
-        configBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
-        configBtn.setOnAction(e -> showConfigurationDialog(executerBtn));
+        executerBtn.setOnAction(e -> {
+            if (selectedHost == null || selectedGuest == null || selectedAlgo == null) {
+                showAlert("Erreur", "Veuillez d'abord configurer les pays et l'algorithme.");
+                return;
+            }
+            try {
+                Set<Student> hosts = students.stream().filter(s -> s.getCountry().equals(selectedHost)).collect(Collectors.toSet());
+                Set<Student> guests = students.stream().filter(s -> s.getCountry().equals(selectedGuest)).collect(Collectors.toSet());
+                MatchingSolver solver = new MatchingSolver(hosts, guests, historyManager);
+                associations = solver.algorithmMatching(selectedAlgo);
+                // Met à jour l'historique et sauvegarde
+                historyManager.addOrReplaceMatching(selectedHost, selectedGuest, associations);
+                historyManager.saveToFile("POO/data/historique.dat");
+                showMainMenuScene();
+            } catch (Exception ex) {
+                showAlert("Erreur", "Erreur lors de l'exécution de l'algorithme : " + ex.getMessage());
+            }
+        });
 
-        HBox nav = new HBox(20, voirElevesBtn, changerCsvBtn, executerBtn, historiqueBtn, configBtn);
+        HBox nav = new HBox(20, voirElevesBtn, changerCsvBtn, configBtn, historiqueBtn, executerBtn);
         nav.setAlignment(Pos.CENTER);
         nav.setPadding(new Insets(20));
         root.setBottom(nav);
 
-        Scene scene = new Scene(root, 1000, 600);
+        // Centre : Liste des associations cliquables
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.TOP_CENTER);
+        grid.setPadding(new Insets(30, 60, 30, 60));
+        grid.setVgap(14);
+        grid.setHgap(24);
+        grid.setStyle("-fx-background-color: #6A6AAA;");
+
+        // Ajoute ceci juste après la création du GridPane
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(45);
+        col1.setHalignment(javafx.geometry.HPos.CENTER);
+
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPercentWidth(10);
+        col2.setHalignment(javafx.geometry.HPos.CENTER);
+
+        ColumnConstraints col3 = new ColumnConstraints();
+        col3.setPercentWidth(45);
+        col3.setHalignment(javafx.geometry.HPos.CENTER);
+
+        grid.getColumnConstraints().addAll(col1, col2, col3);
+
+        // Ligne 0 : Label principal centré sur 3 colonnes
+        Label foundLabel = new Label("Appariement(s) Trouvé(s)");
+        foundLabel.setStyle("-fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;");
+        GridPane.setHalignment(foundLabel, javafx.geometry.HPos.CENTER);
+        grid.add(foundLabel, 0, 0, 3, 1);
+
+        // Ligne 1 : Headers Hôte(s) et Invité(s)
+        Label hostHeader = new Label("Hôte(s)");
+        hostHeader.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+        Label arrowHeader = new Label(""); // colonne centrale vide
+        Label guestHeader = new Label("Invité(s)");
+        guestHeader.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+        GridPane.setHalignment(hostHeader, javafx.geometry.HPos.CENTER);
+        GridPane.setHalignment(guestHeader, javafx.geometry.HPos.CENTER);
+        grid.add(hostHeader, 0, 1);
+        grid.add(arrowHeader, 1, 1);
+        grid.add(guestHeader, 2, 1);
+
+        // Ligne 2+ : Associations
+        int row = 2;
+        if (associations.isEmpty()) {
+            Label emptyLabel = new Label("Aucune association à afficher.\nCliquez sur 'Configuration' puis 'Exécuter' pour générer les associations.");
+            emptyLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+            emptyLabel.setAlignment(Pos.CENTER);
+            emptyLabel.setPadding(new Insets(30, 0, 0, 0));
+            GridPane.setHalignment(emptyLabel, javafx.geometry.HPos.CENTER);
+            grid.add(emptyLabel, 0, row, 3, 1);
+        } else {
+            for (AssociationStudent assoc : associations) {
+                // Ne pas afficher si host ou guest est null
+                if (assoc.getHost() == null || assoc.getGuest() == null) continue;
+
+                Label host = new Label(assoc.getHost().getName() + " " + assoc.getHost().getForename());
+                host.setStyle("-fx-text-fill: #222; -fx-font-size: 16px; -fx-font-weight: bold;");
+                Label arrow = new Label("⇄");
+                arrow.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 22px; -fx-font-weight: bold;");
+                Label guest = new Label(assoc.getGuest().getName() + " " + assoc.getGuest().getForename());
+                guest.setStyle("-fx-text-fill: #222; -fx-font-size: 16px; -fx-font-weight: bold;");
+
+                HBox card = new HBox();
+                card.setAlignment(Pos.CENTER);
+                card.setSpacing(0);
+                card.setPrefWidth(636);
+                card.setMaxWidth(Double.MAX_VALUE);
+
+                HBox hostBox = new HBox(host);
+                hostBox.setPrefWidth(0.45 * 636);
+                hostBox.setAlignment(Pos.CENTER); // <-- Déjà centré
+
+                HBox arrowBox = new HBox(arrow);
+                arrowBox.setAlignment(Pos.CENTER);
+                arrowBox.setPrefWidth(0.10 * 636);
+
+                HBox guestBox = new HBox(guest);
+                guestBox.setPrefWidth(0.45 * 636);
+                guestBox.setAlignment(Pos.CENTER); // <-- Déjà centré
+
+                card.getChildren().addAll(hostBox, arrowBox, guestBox);
+
+                card.setStyle(
+                    "-fx-background-color: #F4F4F4;" +
+                    "-fx-background-radius: 14;" +
+                    "-fx-padding: 14 0 14 0;" +
+                    "-fx-cursor: hand;" +
+                    "-fx-effect: dropshadow(gaussian, #4A4A8A22, 6, 0.15, 2, 2);"
+                );
+                card.setOnMouseEntered(e -> card.setStyle(
+                    "-fx-background-color: #B3D1FF;" +
+                    "-fx-background-radius: 14;" +
+                    "-fx-padding: 14 0 14 0;" +
+                    "-fx-cursor: hand;" +
+                    "-fx-effect: dropshadow(gaussian, #4A4A8A, 12, 0.25, 2, 2);"
+                ));
+                card.setOnMouseExited(e -> card.setStyle(
+                    "-fx-background-color: #F4F4F4;" +
+                    "-fx-background-radius: 14;" +
+                    "-fx-padding: 14 0 14 0;" +
+                    "-fx-cursor: hand;" +
+                    "-fx-effect: dropshadow(gaussian, #4A4A8A22, 6, 0.15, 2, 2);"
+                ));
+                card.setOnMouseClicked(e -> showAssociationDetailsScene(assoc));
+
+                grid.add(card, 0, row, 3, 1);
+                row++;
+            }
+        }
+
+        ScrollPane scroll = new ScrollPane(grid);
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        // Ajoute la couleur ici aussi pour remplir tout le center
+        scroll.setStyle("-fx-background: #6A6AAA;"); // <-- Ajoute cette ligne
+        scroll.setPrefHeight(500);
+
+        root.setCenter(scroll);
+
+        // Création du conteneur principal pour permettre les boutons flottants
+        StackPane stack = new StackPane();
+        stack.getChildren().add(root);
+
+        if (!associations.isEmpty()) {
+            AnchorPane floatingPane = new AnchorPane();
+            floatingPane.setPickOnBounds(false); // Laisse passer les clics hors boutons
+
+            // Bouton Export CSV (en bas à droite, dans la zone centrale)
+            Button exportBtn = new Button("Exporter CSV");
+            exportBtn.setStyle(
+                "-fx-background-color: #FFD700; -fx-text-fill: #222; -fx-font-size: 15px; -fx-font-weight: bold; " +
+                "-fx-background-radius: 30; -fx-padding: 12 28 12 28; -fx-effect: dropshadow(gaussian, #22222244, 8, 0.2, 2, 2);"
+            );
+            exportBtn.setOnAction(e -> {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setInitialFileName("associations.csv");
+                File file = fileChooser.showSaveDialog(primaryStage);
+                if (file != null) {
+                    try {
+                        CSVExport.exportMatchingToCsv(associations, file.getAbsolutePath().replace(".csv", ""));
+                        showAlert("Export réussi", "Le fichier a été exporté avec succès !");
+                    } catch (IOException ex) {
+                        showAlert("Erreur", "Erreur lors de l'export : " + ex.getMessage());
+                    }
+                }
+            });
+
+            // Bouton Étudiants sans matching (en bas à gauche, rouge)
+            Button unmatchedBtn = new Button("Étudiants sans matching");
+            unmatchedBtn.setStyle(
+                "-fx-background-color:rgb(255, 255, 255); -fx-text-fill: black; -fx-font-size: 15px; -fx-font-weight: bold;" +
+                "-fx-background-radius: 30; -fx-padding: 12 28 12 28; -fx-effect: dropshadow(gaussian,rgba(17, 17, 17, 0.27), 8, 0.2, 2, 2);"
+            );
+            unmatchedBtn.setOnAction(e -> showRemainingStudentsDialog());
+
+            // Positionne les boutons à l'intérieur de la zone centrale (ajuste les valeurs selon ton layout)
+            AnchorPane.setBottomAnchor(exportBtn, 90.0); // Distance du bas
+            AnchorPane.setRightAnchor(exportBtn, 50.0);  // Distance de la droite
+
+            AnchorPane.setBottomAnchor(unmatchedBtn, 90.0);
+            AnchorPane.setLeftAnchor(unmatchedBtn, 50.0);
+
+            floatingPane.getChildren().addAll(exportBtn, unmatchedBtn);
+            stack.getChildren().add(floatingPane);
+        }
+
+        Scene scene = new Scene(stack, primaryStage.getWidth(), primaryStage.getHeight());
         primaryStage.setScene(scene);
     }
 
@@ -448,31 +540,14 @@ public class MainApp extends Application {
         Button retourButton = new Button("Retour");
         retourButton.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
         retourButton.setOnAction(e -> showMainMenuScene());
-
-        Button exportButton = new Button("Exporter en CSV");
-        exportButton.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
-        exportButton.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setInitialFileName("details_association.csv");
-            File file = fileChooser.showSaveDialog(primaryStage);
-            if (file != null) {
-                try {
-                    CSVExport.exportMatchingToCsv(Collections.singletonList(assoc), file.getAbsolutePath().replace(".csv", ""));
-                    showAlert("Export réussi", "Le fichier a été exporté avec succès !");
-                } catch (IOException ex) {
-                    showAlert("Erreur", "Erreur lors de l'export : " + ex.getMessage());
-                }
-            }
-        });
-
-        nav.getChildren().addAll(retourButton, exportButton);
+        nav.getChildren().addAll(retourButton);
 
         // Ajoute la navigation sous le score
         VBox bottomBox = new VBox(10, scoreBox, nav);
         bottomBox.setAlignment(Pos.CENTER);
         root.setBottom(bottomBox);
 
-        Scene scene = new Scene(root, 800, 550);
+        Scene scene = new Scene(root, primaryStage.getWidth(), primaryStage.getHeight());
         primaryStage.setScene(scene);
     }
 
@@ -492,10 +567,189 @@ public class MainApp extends Application {
 
     // Historique (à compléter)
     private void showHistoriqueScene() {
-        // À implémenter si besoin
+        Stage dialog = new Stage();
+        dialog.initOwner(primaryStage);
+        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        dialog.setTitle("Historique des associations");
+
+        VBox root = new VBox(20);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(30));
+        root.setStyle("-fx-background-color: #4A4A8A;");
+
+        Label title = new Label("Historique des associations");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+
+        VBox listBox = new VBox(8);
+        listBox.setAlignment(Pos.CENTER);
+
+        Map<String, List<AssociationStudent>> historique = historyManager.getHistorique();
+        if (historique == null || historique.isEmpty()) {
+            Label empty = new Label("Aucun historique enregistré.");
+            empty.setStyle("-fx-text-fill: white; -fx-font-size: 15px;");
+            listBox.getChildren().add(empty);
+        } else {
+            for (Map.Entry<String, List<AssociationStudent>> entry : historique.entrySet()) {
+                String key = entry.getKey();
+                List<AssociationStudent> assocList = entry.getValue();
+                Label keyLabel = new Label("Appariement : " + key);
+                keyLabel.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 16px; -fx-font-weight: bold;");
+                listBox.getChildren().add(keyLabel);
+                if (assocList == null || assocList.isEmpty()) {
+                    Label empty = new Label("Aucune association pour ce couple.");
+                    empty.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+                    listBox.getChildren().add(empty);
+                } else {
+                    for (AssociationStudent assoc : assocList) {
+                        if (assoc.getHost() == null || assoc.getGuest() == null) continue;
+                        Label label = new Label(
+                            assoc.getHost().getName() + " " + assoc.getHost().getForename() +
+                            " ⇄ " +
+                            assoc.getGuest().getName() + " " + assoc.getGuest().getForename() +
+                            " | Affinité : " + assoc.describeLevelOfAffinity()
+                        );
+                        label.setStyle("-fx-text-fill: white; -fx-font-size: 15px;");
+                        label.setMaxWidth(320); // Limite la largeur
+                        label.setPrefWidth(320);
+                        label.setWrapText(true); // Retour à la ligne automatique
+                        listBox.getChildren().add(label);
+                    }
+                }
+            }
+        }
+
+        ScrollPane scroll = new ScrollPane(listBox);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background: #6A6AAA;");
+        scroll.setPrefHeight(300);
+
+        // Boutons centrés
+        HBox buttonBox = new HBox(20);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        Button clearBtn = new Button("Vider l'historique");
+        clearBtn.setStyle("-fx-background-color: #D32F2F; -fx-text-fill: white; -fx-font-size: 14px;");
+        clearBtn.setOnAction(e -> {
+            historyManager.clearHistorique();
+            historyManager.saveToFile("POO/data/historique.dat");
+            dialog.close();
+            showAlert("Historique vidé", "L'historique a bien été supprimé.");
+        });
+
+        Button closeBtn = new Button("Fermer");
+        closeBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
+        closeBtn.setOnAction(e -> dialog.close());
+
+        buttonBox.getChildren().addAll(clearBtn, closeBtn);
+
+        root.getChildren().setAll(title, scroll, buttonBox);
+
+        Scene scene = new Scene(root, 500, 470);
+        dialog.setScene(scene);
+        dialog.showAndWait();
     }
 
     public static void main(String[] args) {
         launch(args);
     }
+
+    // Nouvelle fenêtre modale pour les étudiants restants
+    private void showRemainingStudentsDialog() {
+        Stage dialog = new Stage();
+        dialog.initOwner(primaryStage);
+        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        dialog.setTitle("Étudiants sans matching");
+
+        // Filtrer uniquement les étudiants des pays sélectionnés
+        Set<Student> matched = new HashSet<>();
+        for (AssociationStudent assoc : associations) {
+            if (assoc.getScoreAssociation() != null) {
+                matched.add(assoc.getHost());
+                matched.add(assoc.getGuest());
+            }
+        }
+        List<Student> remaining = students.stream()
+            .filter(s -> (selectedHost != null && s.getCountry().equals(selectedHost)) ||
+                         (selectedGuest != null && s.getCountry().equals(selectedGuest)))
+            .filter(s -> !matched.contains(s))
+            .toList();
+
+        VBox root = new VBox(15);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(30));
+        root.setStyle("-fx-background-color: #4A4A8A; -fx-background-radius: 18;");
+
+        Label title = new Label("Étudiants sans matching (" + remaining.size() + ")");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+
+        VBox listBox = new VBox(8);
+        listBox.setAlignment(Pos.CENTER);
+
+        for (Student s : remaining) {
+            Label label = new Label(s.getName() + " " + s.getForename() + " (" + s.getCountry().getFullName() + ")");
+            label.setStyle("-fx-text-fill: white; -fx-font-size: 15px;");
+            listBox.getChildren().add(label);
+        }
+
+        ScrollPane scroll = new ScrollPane(listBox);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background: transparent;");
+        scroll.setPrefHeight(300);
+
+        Button closeBtn = new Button("Fermer");
+        closeBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
+        closeBtn.setOnAction(e -> dialog.close());
+
+        root.getChildren().addAll(title, scroll, closeBtn);
+
+        Scene scene = new Scene(root, 400, 450);
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
+
+    private void showListeEtudiantsScene() {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: #4A4A8A;");
+
+        // Label principal en haut
+        Label title = new Label("Liste de tous les étudiants du CSV");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
+        BorderPane.setAlignment(title, Pos.CENTER);
+        BorderPane.setMargin(title, new Insets(30, 0, 20, 0));
+        root.setTop(title);
+
+        // Liste centrée dans un VBox avec fond bleu clair
+        VBox listBox = new VBox(12);
+        listBox.setAlignment(Pos.CENTER);
+        listBox.setPadding(new Insets(30));
+        for (Student student : students) {
+            Label label = new Label(student.getName() + " " + student.getForename() + " (" + student.getCountry().getFullName() + ")");
+            label.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+            listBox.getChildren().add(label);
+        }
+
+        StackPane centerPane = new StackPane();
+        centerPane.setStyle("-fx-background-color: #6A6AAA; -fx-background-radius: 14;");
+        centerPane.setPadding(new Insets(40, 60, 40, 60));
+        centerPane.getChildren().add(listBox);
+
+        ScrollPane scroll = new ScrollPane(centerPane);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background: transparent;");
+        scroll.setPrefHeight(400);
+        root.setCenter(scroll);
+
+        // Bouton retour en bas, centré
+        Button retourBtn = new Button("Retour");
+        retourBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
+        retourBtn.setOnAction(e -> showMainMenuScene());
+        HBox nav = new HBox(retourBtn);
+        nav.setAlignment(Pos.CENTER);
+        nav.setPadding(new Insets(30));
+        root.setBottom(nav);
+
+        Scene scene = new Scene(root, primaryStage.getWidth(), primaryStage.getHeight());
+        primaryStage.setScene(scene);
+    }
+    
 }
