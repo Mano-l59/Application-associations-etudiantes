@@ -39,7 +39,7 @@
 
 ---
 
-## Répartition des contributions et dynamique de groupe
+## Répartition des contributions
 
 ### LEMAIRE Mano
 - Réalisation du maquettage basse fidélité
