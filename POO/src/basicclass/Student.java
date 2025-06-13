@@ -186,4 +186,8 @@ public class Student implements Serializable {
         Student student = (Student) o;
         return this.ID == student.ID;
     }
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(this.getId());
+    }
 }

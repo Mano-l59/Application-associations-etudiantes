@@ -2,7 +2,7 @@ package basicclass;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+import ihm.AffinityWeights;
 import ihm.MainApp;
 import utils.HistoryConstraintChecker;
 
@@ -15,6 +15,7 @@ import java.io.Serializable;
 public class AssociationStudent implements Serializable {
     private final Student HOST;
     private final Student GUEST;
+    private String invalidReason= null;
     
     /**
      * Représente le score d'une affinité entre un hôte et un invité. Plus le score est haut, moins l'affinité est forte. L'attribut peut être nul si l'association est impossible.
@@ -97,8 +98,9 @@ public class AssociationStudent implements Serializable {
      */
 
     public Integer scoreHobbie() {
-        final int COST_OF_HAVING_DIFF_HOBBIE = 3;
-        final int COST_OF_HAVING_LESS_HOBBIE = 1;
+        AffinityWeights w= AffinityWeights.getInstance();
+        final int COST_OF_HAVING_DIFF_HOBBIE = w.getCostOfHavingDiffHobbie();
+        final int COST_OF_HAVING_LESS_HOBBIE = w.getCostOfHavingLessHobbie();
         List<String> hoteHobbies = Arrays.asList(HOST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
         List<String> guestHobbies = Arrays.asList(GUEST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
 
@@ -141,35 +143,39 @@ public class AssociationStudent implements Serializable {
 
     public void scoreAffinity() {
         HistoryConstraintChecker.result histoResult = HistoryConstraintChecker.checkHistoryConstraint(HOST, GUEST, MainApp.historyManager);
-
+        AffinityWeights w= AffinityWeights.getInstance();
         if(histoResult.equals(HistoryConstraintChecker.result.OTHER)){
-            this.setScoreAffinity(null);
-        }else if(histoResult.equals(HistoryConstraintChecker.result.SAME)){
-            this.setScoreAffinity(-2);
+            this.setScoreAffinity(w.getHistoryOtherDetected());
+            this.invalidReason = "Association impossible, déjà appariés dans le passé et l'un d'eux ne souhaite pas être apparié à nouveau.";
+        }else if(HOST.getConstraintsMap().get(Constraints.HOST_HAS_ANIMAL).equals("yes") && GUEST.getConstraintsMap().get(Constraints.GUEST_ANIMAL_ALLERGY).equals("yes")){
+            this.setScoreAffinity(w.getAnimalAllergy());
+            this.invalidReason = "Association impossible, l'hôte a un animal et l'invité est allergique.";
+        }else if (!this.foodCompatibility()){
+            this.setScoreAffinity(w.getRegimeRestriction());
+            this.invalidReason = "Association impossible, régime alimentaire incompatible.";
+        }else if(this.laFranceEstReloue()){
+            this.setScoreAffinity(w.getFranceRule());
+            this.invalidReason = "Association impossible, l'un des deux est français et ils n'ont pas de hobby en commun.";
         }else{
-            if(HOST.getConstraintsMap().get(Constraints.HOST_HAS_ANIMAL).equals("yes") && GUEST.getConstraintsMap().get(Constraints.GUEST_ANIMAL_ALLERGY).equals("yes")){
-            this.setScoreAffinity(null);
-            }else if (!this.foodCompatibility()){
-                this.setScoreAffinity(null);
-            }else if(this.laFranceEstReloue()){
-                this.setScoreAffinity(null);
-            }else{
-                if(HOST.getAge()==GUEST.getAge()){
-                    this.setScoreAffinity(-1);
-                }else if((HOST.getAge()-GUEST.getAge())>2 &&(HOST.getAge()-GUEST.getAge())<5){
-                    this.setScoreAffinity(2);
-                }else{
-                    this.setScoreAffinity(5);
-                }
-                if(!HOST.getGender().equals(GUEST.getConstraintsMap().get(Constraints.PAIR_GENDER))){
-                    this.setScoreAffinity(1);
-                }
-                if(!GUEST.getGender().equals(HOST.getConstraintsMap().get(Constraints.PAIR_GENDER))){
-                    this.setScoreAffinity(1);
-                }
-                this.setScoreAffinity(this.scoreHobbie());
+            if(histoResult.equals(HistoryConstraintChecker.result.BONUS)){
+                this.setScoreAffinity(w.getBonusHistory());
             }
+            if(HOST.getAge()==GUEST.getAge()){
+                this.setScoreAffinity(w.getSameAge());
+            }else if((HOST.getAge()-GUEST.getAge())>2 &&(HOST.getAge()-GUEST.getAge())<5){
+                this.setScoreAffinity(w.getAgeBetween2And5());
+            }else{
+                this.setScoreAffinity(w.getAgeSuperior5());
+            }
+            if(!HOST.getGender().equals(GUEST.getConstraintsMap().get(Constraints.PAIR_GENDER))){
+                this.setScoreAffinity(w.getDifferentGender());
+            }
+            if(!GUEST.getGender().equals(HOST.getConstraintsMap().get(Constraints.PAIR_GENDER))){
+                this.setScoreAffinity(w.getDifferentGender());
+            }
+            this.setScoreAffinity(this.scoreHobbie());
         }
+        
     }
     
     /**
@@ -183,8 +189,8 @@ public class AssociationStudent implements Serializable {
             levelAffinityString="Association impossible contrainte non respecté";
         }else{
             int score = (int) this.scoreAssociation;
-            if(score >= -1 && score <3) levelAffinityString="Forte affinité";
-            else if(score >=3 && score <9) levelAffinityString="Moyenne affinité";
+            if(score >= -3 && score <3) levelAffinityString="Forte affinité";
+            else if(score >=3 && score <8) levelAffinityString="Moyenne affinité";
             else levelAffinityString="Faible affinité";
         }
         return levelAffinityString;
@@ -257,5 +263,11 @@ public class AssociationStudent implements Serializable {
         this.scoreAffinity();
         return this.scoreAssociation;
     }
-
+    /**
+     * Retourne le motif d'impossibilité si l'association est invalide.
+     * @return Le motif, ou null si l'association est valide.
+     */
+    public String getInvalidReason() {
+        return invalidReason;
+    }
 }

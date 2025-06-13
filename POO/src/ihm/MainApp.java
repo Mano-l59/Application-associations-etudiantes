@@ -20,27 +20,23 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MainApp extends Application {
-    
+
     private Stage primaryStage;
     private List<Student> students = new ArrayList<>();
     private List<String> failedStudents = new ArrayList<>();
     private List<AssociationStudent> associations = new ArrayList<>();
     public static HistoryManager historyManager = new HistoryManager();
 
-
-    // Champs pour la configuration
     private Country selectedHost = null;
     private Country selectedGuest = null;
     private MatchingEnum selectedAlgo = null;
     private boolean configDone = false;
-
     private Set<Student> ignoredHosts = new HashSet<>();
     private Set<Student> ignoredGuests = new HashSet<>();
 
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        // Charge l'historique dès le début
         historyManager.loadFromFile("POO/data/historique.dat");
         primaryStage.setTitle("Gestion des étudiants");
         primaryStage.setMinWidth(900);
@@ -414,16 +410,49 @@ public class MainApp extends Application {
         }
 
         // Bouton Étudiants sans matching (toujours affiché)
-        Button unmatchedBtn = new Button("Étudiants sans matching");
-        unmatchedBtn.setStyle(
+        Button failedBtn = new Button("Associations échouées");
+        failedBtn.setStyle(
             "-fx-background-color:rgb(255, 255, 255); -fx-text-fill: black; -fx-font-size: 15px; -fx-font-weight: bold;" +
             "-fx-background-radius: 30; -fx-padding: 12 28 12 28; -fx-effect: dropshadow(gaussian,rgba(17, 17, 17, 0.27), 8, 0.2, 2, 2);"
         );
-        unmatchedBtn.setOnAction(e -> showRemainingStudentsDialog());
+        failedBtn.setOnAction(e -> {
+            // Récupère les associations échouées et les étudiants seuls
+            List<AssociationStudent> failedAssociations = new ArrayList<>();
+            List<Student> matched = new ArrayList<>();
+            for (AssociationStudent assoc : associations) {
+                if (assoc.getScoreAssociation() != null) {
+                    matched.add(assoc.getHost());
+                    matched.add(assoc.getGuest());
+                }
+            }
+            // Récupère la liste des associations échouées (invalides)
+            if (selectedHost != null && selectedGuest != null) {
+                Set<Student> hosts = students.stream()
+                    .filter(s -> s.getCountry().equals(selectedHost))
+                    .filter(s -> !ignoredHosts.contains(s))
+                    .collect(Collectors.toSet());
+                Set<Student> guests = students.stream()
+                    .filter(s -> s.getCountry().equals(selectedGuest))
+                    .filter(s -> !ignoredGuests.contains(s))
+                    .collect(Collectors.toSet());
+                MatchingSolver solver = new MatchingSolver(hosts, guests, historyManager);
+                solver.algorithmMatching(selectedAlgo);
+                failedAssociations = solver.getAssociationsInvalid();
+            }
+            // Étudiants seuls (matching impair)
+            List<Student> unmatched = students.stream()
+                .filter(s -> (selectedHost != null && s.getCountry().equals(selectedHost)) ||
+                             (selectedGuest != null && s.getCountry().equals(selectedGuest)))
+                .filter(s -> !matched.contains(s))
+                .filter(s -> !ignoredHosts.contains(s) && !ignoredGuests.contains(s))
+                .toList();
 
-        AnchorPane.setBottomAnchor(unmatchedBtn, 90.0);
-        AnchorPane.setLeftAnchor(unmatchedBtn, 50.0);
-        floatingPane.getChildren().add(unmatchedBtn);
+            showFailedAssociationsDialog(failedAssociations, unmatched);
+        });
+
+        AnchorPane.setBottomAnchor(failedBtn, 90.0);
+        AnchorPane.setLeftAnchor(failedBtn, 50.0);
+        floatingPane.getChildren().add(failedBtn);
 
         stack.getChildren().add(floatingPane);
 
@@ -560,14 +589,146 @@ public class MainApp extends Application {
             studentListView,
             validerBtn
         );
-        Tab tabAuto = new Tab("Automatique", autoRoot);
-        tabAuto.setClosable(false);
 
-        // --- Onglets vides pour la suite ---
-        Tab tabManual = new Tab("Manuelle", new Label("À implémenter"));
-        tabManual.setClosable(false);
-        Tab tabPond = new Tab("Pondération", new Label("À implémenter"));
+
+        // --- Onglet Pondération aligné ---
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setPadding(new Insets(20));
+        grid.setHgap(18);
+        grid.setVgap(8);
+        grid.setStyle("-fx-background-color: #6A6AAA; -fx-background-radius: 10;");
+
+        AffinityWeights w = AffinityWeights.getInstance();
+        Map<String, Spinner<Integer>> spinners = new LinkedHashMap<>();
+
+        // Utilitaire pour créer un spinner compact
+        java.util.function.Function<Integer, Spinner<Integer>> makeSpinner = (value) -> {
+            Spinner<Integer> s = new Spinner<>(-20, 100, value);
+            s.setEditable(true);
+            s.setPrefWidth(60);
+            s.getEditor().setStyle("-fx-font-size: 12px;");
+            return s;
+        };
+
+        // Champs pondérations classiques
+        String[] labels = {
+            "Bonus historique", "Même âge", "Âge entre 2 et 5", "Âge > 5",
+            "Genre différent", "Coût hobby différent", "Coût hobby en moins"
+        };
+        int[] values = {
+            w.getBonusHistory(), w.getSameAge(), w.getAgeBetween2And5(), w.getAgeSuperior5(),
+            w.getDifferentGender(), w.getCostOfHavingDiffHobbie(), w.getCostOfHavingLessHobbie()
+        };
+
+        for (int i = 0; i < labels.length; i++) {
+            Label l = new Label(labels[i]);
+            l.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+            Spinner<Integer> s = makeSpinner.apply(values[i]);
+            spinners.put(labels[i], s);
+            grid.add(l, 0, i);
+            grid.add(s, 1, i);
+        }
+
+        // Blocages dynamiques
+        String[] blocages = {"Blocage historique", "Blocage animal", "Blocage régime", "Blocage France"};
+        String[] blocageKeys = {"HistoryOtherDetected", "AnimalAllergy", "RegimeRestriction", "FranceRule"};
+        Integer[] blocageDefaults = {
+            w.getHistoryOtherDetected() != null ? w.getHistoryOtherDetected() : 99,
+            w.getAnimalAllergy() != null ? w.getAnimalAllergy() : 99,
+            w.getRegimeRestriction() != null ? w.getRegimeRestriction() : 99,
+            w.getFranceRule() != null ? w.getFranceRule() : 99
+        };
+
+        Map<String, RadioButton> blocageRadios = new HashMap<>();
+        Map<String, HBox> blocageMalusBoxes = new HashMap<>();
+        Map<String, Spinner<Integer>> blocageMalusSpinners = new HashMap<>();
+
+        for (int i = 0; i < blocages.length; i++) {
+            int row = labels.length + i;
+            Label l = new Label(blocages[i]);
+            l.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+            RadioButton rb = new RadioButton("Bloquer");
+            rb.setSelected(true);
+            rb.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+            blocageRadios.put(blocageKeys[i], rb);
+
+            // Malus box (cachée par défaut)
+            Label malusLabel = new Label("Malus :");
+            malusLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+            Spinner<Integer> malusSpinner = makeSpinner.apply(blocageDefaults[i]);
+            HBox malusBox = new HBox(5, malusLabel, malusSpinner);
+            malusBox.setAlignment(Pos.CENTER_LEFT);
+            malusBox.setVisible(false);
+            blocageMalusBoxes.put(blocageKeys[i], malusBox);
+            blocageMalusSpinners.put(blocageKeys[i], malusSpinner);
+
+            rb.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+                malusBox.setVisible(!isSelected);
+            });
+
+            grid.add(l, 0, row);
+            grid.add(rb, 1, row);
+            grid.add(malusBox, 2, row);
+        }
+
+        // Boutons
+        HBox btnBox = new HBox(20);
+        btnBox.setAlignment(Pos.CENTER);
+
+        Button enregistrerBtn = new Button("Enregistrer");
+        enregistrerBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 13px;");
+        enregistrerBtn.setOnAction(e -> {
+            w.setBonusHistory(spinners.get("Bonus historique").getValue());
+            w.setSameAge(spinners.get("Même âge").getValue());
+            w.setAgeBetween2And5(spinners.get("Âge entre 2 et 5").getValue());
+            w.setAgeSuperior5(spinners.get("Âge > 5").getValue());
+            w.setDifferentGender(spinners.get("Genre différent").getValue());
+            w.setCostOfHavingDiffHobbie(spinners.get("Coût hobby différent").getValue());
+            w.setCostOfHavingLessHobbie(spinners.get("Coût hobby en moins").getValue());
+            // Blocages
+            w.setHistoryOtherDetected(blocageRadios.get("HistoryOtherDetected").isSelected() ? null : blocageMalusSpinners.get("HistoryOtherDetected").getValue());
+            w.setAnimalAllergy(blocageRadios.get("AnimalAllergy").isSelected() ? null : blocageMalusSpinners.get("AnimalAllergy").getValue());
+            w.setRegimeRestriction(blocageRadios.get("RegimeRestriction").isSelected() ? null : blocageMalusSpinners.get("RegimeRestriction").getValue());
+            w.setFranceRule(blocageRadios.get("FranceRule").isSelected() ? null : blocageMalusSpinners.get("FranceRule").getValue());
+            showAlert("Pondérations enregistrées", "Les pondérations ont été mises à jour.");
+        });
+
+        Button resetBtn = new Button("Reset");
+        resetBtn.setStyle("-fx-background-color: #D32F2F; -fx-text-fill: white; -fx-font-size: 13px;");
+        resetBtn.setOnAction(e -> {
+            w.reset();
+            spinners.get("Bonus historique").getValueFactory().setValue(w.getBonusHistory());
+            spinners.get("Même âge").getValueFactory().setValue(w.getSameAge());
+            spinners.get("Âge entre 2 et 5").getValueFactory().setValue(w.getAgeBetween2And5());
+            spinners.get("Âge > 5").getValueFactory().setValue(w.getAgeSuperior5());
+            spinners.get("Genre différent").getValueFactory().setValue(w.getDifferentGender());
+            spinners.get("Coût hobby différent").getValueFactory().setValue(w.getCostOfHavingDiffHobbie());
+            spinners.get("Coût hobby en moins").getValueFactory().setValue(w.getCostOfHavingLessHobbie());
+            for (int i = 0; i < blocageKeys.length; i++) {
+                blocageRadios.get(blocageKeys[i]).setSelected(true);
+                blocageMalusBoxes.get(blocageKeys[i]).setVisible(false);
+                blocageMalusSpinners.get(blocageKeys[i]).getValueFactory().setValue(99);
+            }
+        });
+
+        btnBox.getChildren().addAll(enregistrerBtn, resetBtn);
+
+        VBox pondRoot = new VBox(10,
+            new Label("Modifiez les pondérations d'affinité ci-dessous :"),
+            grid,
+            btnBox
+        );
+        pondRoot.setAlignment(Pos.CENTER);
+        pondRoot.setPadding(new Insets(10));
+        pondRoot.setStyle("-fx-background-color: #6A6AAA; -fx-background-radius: 10;");
+
+        Tab tabAuto = new Tab("Configuration automatique", autoRoot);
+        tabAuto.setClosable(false);
+        Tab tabPond = new Tab("Pondération", pondRoot);
         tabPond.setClosable(false);
+        Tab tabManual = new Tab("Configuration manuelle", new Label("Pas")); // Placeholder pour l'onglet manuel
+        tabManual.setClosable(false);
 
         tabPane.getTabs().addAll(tabAuto, tabManual, tabPond);
 
@@ -649,19 +810,19 @@ public class MainApp extends Application {
 
     private Label createInfoLabel(String text) {
         Label label = new Label(text);
-        label.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        label.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
         return label;
     }
 
-    private void showAlert(String title, String msg) {
+    private void showAlert(String titre, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
+        alert.setTitle(titre);
         alert.setHeaderText(null);
-        alert.setContentText(msg);
+        alert.setContentText(message);
         alert.showAndWait();
     }
 
-    // Historique (à compléter)
+    // Historique
     private void showHistoriqueScene() {
         Stage dialog = new Stage();
         dialog.initOwner(primaryStage);
@@ -747,61 +908,55 @@ public class MainApp extends Application {
         dialog.showAndWait();
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     // Nouvelle fenêtre modale pour les étudiants restants
-    private void showRemainingStudentsDialog() {
+    private void showFailedAssociationsDialog(List<AssociationStudent> failedAssociations, List<Student> unmatchedStudents) {
         Stage dialog = new Stage();
         dialog.initOwner(primaryStage);
         dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-        dialog.setTitle("Étudiants sans matching");
-
-        // Filtrer uniquement les étudiants des pays sélectionnés
-        Set<Student> matched = new HashSet<>();
-        for (AssociationStudent assoc : associations) {
-            if (assoc.getScoreAssociation() != null) {
-                matched.add(assoc.getHost());
-                matched.add(assoc.getGuest());
-            }
-        }
-        List<Student> remaining = students.stream()
-            .filter(s -> (selectedHost != null && s.getCountry().equals(selectedHost)) ||
-                         (selectedGuest != null && s.getCountry().equals(selectedGuest)))
-            .filter(s -> !matched.contains(s))
-            .filter(s -> !ignoredHosts.contains(s) && !ignoredGuests.contains(s)) // <-- Ajoute cette ligne
-            .toList();
+        dialog.setTitle("Associations échouées");
 
         VBox root = new VBox(15);
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(30));
         root.setStyle("-fx-background-color: #4A4A8A; -fx-background-radius: 18;");
 
-        Label title = new Label("Étudiants sans matching (" + remaining.size() + ")");
+        Label title = new Label("Associations échouées");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
 
-        VBox listBox = new VBox(8);
-        listBox.setAlignment(Pos.CENTER);
+        ListView<String> listView = new ListView<>();
+        listView.setStyle("-fx-background-color: #6A6AAA; -fx-text-fill: white;");
 
-        for (Student s : remaining) {
-            Label label = new Label(s.getName() + " " + s.getForename() + " (" + s.getCountry().getFullName() + ")");
-            label.setStyle("-fx-text-fill: white; -fx-font-size: 15px;");
-            listBox.getChildren().add(label);
+        Set<Student> studentsInAssoc = failedAssociations.stream()
+            .flatMap(a -> Arrays.stream(new Student[]{a.getHost(), a.getGuest()}))
+            .collect(Collectors.toSet());
+        studentsInAssoc.addAll(
+            associations.stream()
+                .filter(a -> a.getScoreAssociation() != null)
+                .flatMap(a -> Arrays.stream(new Student[]{a.getHost(), a.getGuest()}))
+                .collect(Collectors.toSet())
+        );
+
+        for (AssociationStudent assoc : failedAssociations) {
+            String msg = assoc.getHost().getName() + " " + assoc.getHost().getForename()
+                       + " ⇄ "
+                       + assoc.getGuest().getName() + " " + assoc.getGuest().getForename()
+                       + " : " + assoc.getInvalidReason();
+            listView.getItems().add(msg);
         }
-
-        ScrollPane scroll = new ScrollPane(listBox);
-        scroll.setFitToWidth(true);
-        scroll.setStyle("-fx-background: transparent;");
-        scroll.setPrefHeight(300);
+        for (Student s : unmatchedStudents) {
+            if (!studentsInAssoc.contains(s)) {
+                String msg = s.getName() + " " + s.getForename() + " (" + s.getCountry().getFullName() + ") — Aucun binôme possible";
+                listView.getItems().add(msg);
+            }
+        }
 
         Button closeBtn = new Button("Fermer");
         closeBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
         closeBtn.setOnAction(e -> dialog.close());
 
-        root.getChildren().addAll(title, scroll, closeBtn);
+        root.getChildren().addAll(title, listView, closeBtn);
 
-        Scene scene = new Scene(root, 400, 450);
+        Scene scene = new Scene(root, 600, 450);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
@@ -851,4 +1006,7 @@ public class MainApp extends Application {
         primaryStage.setScene(scene);
     }
     
+    public static void main(String[] args) {
+        launch(args);
+    }
 }

@@ -40,6 +40,7 @@ public class HistoryConstraintChecker {
                 }
             }
         }
+       
         if (werePaired) {
             if ("same".equals(hostHistory) && "same".equals(guestHistory)) {
                 return result.SAME;
