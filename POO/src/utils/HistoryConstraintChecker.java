@@ -14,7 +14,9 @@ import java.util.List;
  * @version 1.0
  */
 public class HistoryConstraintChecker {
-
+    public enum result{
+        SAME,OTHER,BONUS,DEFAULT;
+    }
     /**
      * Permet de déterminer si deux étudiants hote et invite ont dejà été dans le passé (dans l'historique) appariés ensemble et
      * si c"est le cas, regarder si les deux étudiants veulent être appariés à nouveau ou non.
@@ -23,7 +25,7 @@ public class HistoryConstraintChecker {
      * @param historyManager Le gestionnaire d'historique pour vérifier les appariements passés
      * @return true si les deux étudiants ont été appariés ensemble dans le passé et qu'ils souhaitent être appariés à nouveau, false sinon.
      */
-    public static boolean checkHistoryConstraint(Student host, Student guest, HistoryManager historyManager) {
+    public static result checkHistoryConstraint(Student host, Student guest, HistoryManager historyManager) {
         String hostHistory = host.getConstraintsMap().getOrDefault(Constraints.HISTORY, "").toLowerCase();
         String guestHistory = guest.getConstraintsMap().getOrDefault(Constraints.HISTORY, "").toLowerCase();
 
@@ -40,11 +42,16 @@ public class HistoryConstraintChecker {
         }
         if (werePaired) {
             if ("same".equals(hostHistory) && "same".equals(guestHistory)) {
-                return true;
-            }else{
-                return false;
+                return result.SAME;
+            }else if("other".equals(hostHistory) || "other".equals(guestHistory)) {
+                return result.OTHER;
+            }else if("same".equals(hostHistory) || "same".equals(guestHistory)) {
+                return result.BONUS;
+            }else {
+                return result.DEFAULT;
+
             }
         }
-        return false;
+        return result.DEFAULT;
     }
 }

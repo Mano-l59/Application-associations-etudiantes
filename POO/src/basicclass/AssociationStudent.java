@@ -2,6 +2,10 @@ package basicclass;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import ihm.MainApp;
+import utils.HistoryConstraintChecker;
+
 import java.io.Serializable;
 /**
  * La classe représente une association entre deux "Students"
@@ -30,6 +34,7 @@ public class AssociationStudent implements Serializable {
         this.scoreAssociation = 0;
     }
     
+    
     /**
      * Méthode static utilisée pour l'ajout du poids lors de la création du graphe biparti
      * @param hote l'étudiant hote
@@ -50,11 +55,11 @@ public class AssociationStudent implements Serializable {
      * @param scoreAssociation La valeur de type Integer qui va être ajoutée au score
      * @since 1.0
      */
-    public void setScoreAffinity(Integer scoreAssociation) {
-        if(scoreAssociation==null){
+    public void setScoreAffinity(Integer score) {
+        if(score==null){
             this.scoreAssociation=null; 
         }else{ 
-            this.scoreAssociation = this.scoreAssociation+scoreAssociation;
+            this.scoreAssociation +=score;
         }
     }
 
@@ -91,38 +96,25 @@ public class AssociationStudent implements Serializable {
      * @since 1.0
      */
 
-    public Integer scoreHobbie(){
-        final int COST_OF_HAVING_DIFF_HOBBIE=3;
-        final int COST_OF_HAVING_LESS_HOBBIE=1;
+    public Integer scoreHobbie() {
+        final int COST_OF_HAVING_DIFF_HOBBIE = 3;
+        final int COST_OF_HAVING_LESS_HOBBIE = 1;
         List<String> hoteHobbies = Arrays.asList(HOST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
         List<String> guestHobbies = Arrays.asList(GUEST.getConstraintsMap().get(Constraints.HOBBIES).split(","));
-        List<String> smallerString, higherStrings;
-        int ScoreHobbieMalus=0;
-        int cpt=0;
-        if(hoteHobbies.size()==guestHobbies.size()){
-            for(String h_hobbie : hoteHobbies){
-                for(String g_hobbie : guestHobbies){
-                    if (h_hobbie.equals(g_hobbie)) cpt++;
-                }
-            }
-            ScoreHobbieMalus=hoteHobbies.size()-cpt*COST_OF_HAVING_DIFF_HOBBIE;
-        }else{
-            if (hoteHobbies.size()>guestHobbies.size()){
-                smallerString=guestHobbies;
-                higherStrings=hoteHobbies;
-            }else{
-                smallerString=hoteHobbies;
-                higherStrings=guestHobbies;
-            }
-            for (String s_hobbie : smallerString) {
-                for (String hi_hobbie : higherStrings) {
-                    if(s_hobbie.equals(hi_hobbie)) cpt++;
-                }
-            }
-            ScoreHobbieMalus=((smallerString.size()-cpt)*COST_OF_HAVING_DIFF_HOBBIE)+(higherStrings.size()-smallerString.size())*COST_OF_HAVING_LESS_HOBBIE;
-        }
 
-        return ScoreHobbieMalus;
+        List<String> smaller = hoteHobbies.size() <= guestHobbies.size() ? hoteHobbies : guestHobbies;
+        List<String> larger = hoteHobbies.size() > guestHobbies.size() ? hoteHobbies : guestHobbies;
+
+        int score = 0;
+        if (hoteHobbies.size() != guestHobbies.size()) {
+            score += Math.abs(hoteHobbies.size()-guestHobbies.size())* COST_OF_HAVING_LESS_HOBBIE;
+        }
+        for (String hobbie : smaller) {
+            if (!larger.contains(hobbie)) {
+                score += COST_OF_HAVING_DIFF_HOBBIE;
+            }
+        }
+        return score;
     }
 
     /**
@@ -143,14 +135,17 @@ public class AssociationStudent implements Serializable {
 
     /**
      * Fonction principale du calcul du score d'affinité entre un hôte et un invité
+     * @param historique L'historique des appariements précédents, utilisé pour vérifier les contraintes d'association.
      * @since 1.0
      */
 
     public void scoreAffinity() {
-        if(HOST.getConstraintsMap().get(Constraints.HISTORY).equals("same")|| GUEST.getConstraintsMap().get(Constraints.HISTORY).equals("same")){
-            this.setScoreAffinity(-2);
-        }else if(HOST.getConstraintsMap().get(Constraints.HISTORY).equals("other")|| GUEST.getConstraintsMap().get(Constraints.HISTORY).equals("other")){
+        HistoryConstraintChecker.result histoResult = HistoryConstraintChecker.checkHistoryConstraint(HOST, GUEST, MainApp.historyManager);
+
+        if(histoResult.equals(HistoryConstraintChecker.result.OTHER)){
             this.setScoreAffinity(null);
+        }else if(histoResult.equals(HistoryConstraintChecker.result.SAME)){
+            this.setScoreAffinity(-2);
         }else{
             if(HOST.getConstraintsMap().get(Constraints.HOST_HAS_ANIMAL).equals("yes") && GUEST.getConstraintsMap().get(Constraints.GUEST_ANIMAL_ALLERGY).equals("yes")){
             this.setScoreAffinity(null);

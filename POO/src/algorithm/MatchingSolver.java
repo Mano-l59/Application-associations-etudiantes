@@ -42,7 +42,7 @@ public class MatchingSolver {
         this.associations = new ArrayList<>();
         for (Student hote : hosts) {
             for (Student invite : guests) {
-                if(HistoryConstraintChecker.checkHistoryConstraint(hote, invite, historyManager)){
+                if(HistoryConstraintChecker.checkHistoryConstraint(hote, invite, historyManager).equals(HistoryConstraintChecker.result.SAME)) {
                     this.associations.add(new AssociationStudent(hote, invite));
                     hosts.remove(hote);
                     guests.remove(invite);

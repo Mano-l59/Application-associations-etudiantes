@@ -20,18 +20,22 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MainApp extends Application {
-
+    
     private Stage primaryStage;
     private List<Student> students = new ArrayList<>();
     private List<String> failedStudents = new ArrayList<>();
     private List<AssociationStudent> associations = new ArrayList<>();
-    private HistoryManager historyManager = new HistoryManager();
+    public static HistoryManager historyManager = new HistoryManager();
+
 
     // Champs pour la configuration
     private Country selectedHost = null;
     private Country selectedGuest = null;
     private MatchingEnum selectedAlgo = null;
     private boolean configDone = false;
+
+    private Set<Student> ignoredHosts = new HashSet<>();
+    private Set<Student> ignoredGuests = new HashSet<>();
 
     @Override
     public void start(Stage primaryStage) {
@@ -230,8 +234,15 @@ public class MainApp extends Application {
                 return;
             }
             try {
-                Set<Student> hosts = students.stream().filter(s -> s.getCountry().equals(selectedHost)).collect(Collectors.toSet());
-                Set<Student> guests = students.stream().filter(s -> s.getCountry().equals(selectedGuest)).collect(Collectors.toSet());
+                Set<Student> hosts = students.stream()
+                    .filter(s -> s.getCountry().equals(selectedHost))
+                    .filter(s -> !ignoredHosts.contains(s))
+                    .collect(Collectors.toSet());
+
+                Set<Student> guests = students.stream()
+                    .filter(s -> s.getCountry().equals(selectedGuest))
+                    .filter(s -> !ignoredGuests.contains(s))
+                    .collect(Collectors.toSet());
                 MatchingSolver solver = new MatchingSolver(hosts, guests, historyManager);
                 associations = solver.algorithmMatching(selectedAlgo);
                 // Met à jour l'historique et sauvegarde
@@ -302,6 +313,8 @@ public class MainApp extends Application {
             for (AssociationStudent assoc : associations) {
                 // Ne pas afficher si host ou guest est null
                 if (assoc.getHost() == null || assoc.getGuest() == null) continue;
+                // NE PAS AFFICHER si le score est null (association impossible)
+                if (assoc.getScoreAssociation() == null) continue;
 
                 Label host = new Label(assoc.getHost().getName() + " " + assoc.getHost().getForename());
                 host.setStyle("-fx-text-fill: #222; -fx-font-size: 16px; -fx-font-weight: bold;");
@@ -371,11 +384,11 @@ public class MainApp extends Application {
         StackPane stack = new StackPane();
         stack.getChildren().add(root);
 
-        if (!associations.isEmpty()) {
-            AnchorPane floatingPane = new AnchorPane();
-            floatingPane.setPickOnBounds(false); // Laisse passer les clics hors boutons
+        AnchorPane floatingPane = new AnchorPane();
+        floatingPane.setPickOnBounds(false);
 
-            // Bouton Export CSV (en bas à droite, dans la zone centrale)
+        // Bouton Export CSV (affiché seulement si associations)
+        if (!associations.isEmpty()) {
             Button exportBtn = new Button("Exporter CSV");
             exportBtn.setStyle(
                 "-fx-background-color: #FFD700; -fx-text-fill: #222; -fx-font-size: 15px; -fx-font-weight: bold; " +
@@ -395,24 +408,24 @@ public class MainApp extends Application {
                 }
             });
 
-            // Bouton Étudiants sans matching (en bas à gauche, rouge)
-            Button unmatchedBtn = new Button("Étudiants sans matching");
-            unmatchedBtn.setStyle(
-                "-fx-background-color:rgb(255, 255, 255); -fx-text-fill: black; -fx-font-size: 15px; -fx-font-weight: bold;" +
-                "-fx-background-radius: 30; -fx-padding: 12 28 12 28; -fx-effect: dropshadow(gaussian,rgba(17, 17, 17, 0.27), 8, 0.2, 2, 2);"
-            );
-            unmatchedBtn.setOnAction(e -> showRemainingStudentsDialog());
-
-            // Positionne les boutons à l'intérieur de la zone centrale (ajuste les valeurs selon ton layout)
-            AnchorPane.setBottomAnchor(exportBtn, 90.0); // Distance du bas
-            AnchorPane.setRightAnchor(exportBtn, 50.0);  // Distance de la droite
-
-            AnchorPane.setBottomAnchor(unmatchedBtn, 90.0);
-            AnchorPane.setLeftAnchor(unmatchedBtn, 50.0);
-
-            floatingPane.getChildren().addAll(exportBtn, unmatchedBtn);
-            stack.getChildren().add(floatingPane);
+            AnchorPane.setBottomAnchor(exportBtn, 90.0);
+            AnchorPane.setRightAnchor(exportBtn, 50.0);
+            floatingPane.getChildren().add(exportBtn);
         }
+
+        // Bouton Étudiants sans matching (toujours affiché)
+        Button unmatchedBtn = new Button("Étudiants sans matching");
+        unmatchedBtn.setStyle(
+            "-fx-background-color:rgb(255, 255, 255); -fx-text-fill: black; -fx-font-size: 15px; -fx-font-weight: bold;" +
+            "-fx-background-radius: 30; -fx-padding: 12 28 12 28; -fx-effect: dropshadow(gaussian,rgba(17, 17, 17, 0.27), 8, 0.2, 2, 2);"
+        );
+        unmatchedBtn.setOnAction(e -> showRemainingStudentsDialog());
+
+        AnchorPane.setBottomAnchor(unmatchedBtn, 90.0);
+        AnchorPane.setLeftAnchor(unmatchedBtn, 50.0);
+        floatingPane.getChildren().add(unmatchedBtn);
+
+        stack.getChildren().add(floatingPane);
 
         Scene scene = new Scene(stack, primaryStage.getWidth(), primaryStage.getHeight());
         primaryStage.setScene(scene);
@@ -425,12 +438,17 @@ public class MainApp extends Application {
         dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
         dialog.setTitle("Configuration");
 
-        VBox root = new VBox(20);
-        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(30));
-        root.setStyle("-fx-background-color: #4A4A8A;");
+        TabPane tabPane = new TabPane();
+        tabPane.setStyle("-fx-background-color: #4A4A8A;");
+        
 
-        // Pays
+        // --- Onglet Automatique ---
+        VBox autoRoot = new VBox(18);
+        autoRoot.setAlignment(Pos.TOP_CENTER);
+        autoRoot.setPadding(new Insets(20));
+        autoRoot.setStyle("-fx-background-color: #6A6AAA; -fx-background-radius: 10;");
+
+        // Choix des pays
         Set<Country> countries = students.stream().map(Student::getCountry).collect(Collectors.toSet());
         List<Country> countryList = new ArrayList<>(countries);
 
@@ -443,15 +461,79 @@ public class MainApp extends Application {
         if (selectedHost != null) hostCombo.setValue(selectedHost);
         if (selectedGuest != null) guestCombo.setValue(selectedGuest);
 
-        // Algo
+        HBox countryBox = new HBox(30, new VBox(new Label("Pays hôte"), hostCombo), new VBox(new Label("Pays invité"), guestCombo));
+        countryBox.setAlignment(Pos.CENTER);
+
+        // Choix de l'algo
         ComboBox<MatchingEnum> algoCombo = new ComboBox<>();
         algoCombo.getItems().addAll(MatchingEnum.values());
         algoCombo.setPromptText("Algorithme");
         if (selectedAlgo != null) algoCombo.setValue(selectedAlgo);
 
-        // Pondérations (à compléter)
-        Label pondLabel = createInfoLabel("Pondérations (non implémenté ici)");
+        VBox algoBox = new VBox(4, new Label("Algorithme"), algoCombo);
+        algoBox.setAlignment(Pos.CENTER);
 
+        // Liste des étudiants filtrés selon le pays sélectionné
+        ListView<Student> studentListView = new ListView<>();
+        studentListView.setCellFactory(lv -> new ListCell<>() {
+            private final CheckBox ignoreBox = new CheckBox();
+            private final Label nameLabel = new Label();
+            private final Region spacer = new Region();
+            private final HBox cellBox = new HBox();
+
+            {
+                cellBox.setAlignment(Pos.CENTER_LEFT);
+                HBox.setHgrow(spacer, Priority.ALWAYS);
+                cellBox.getChildren().addAll(nameLabel, spacer, ignoreBox);
+                cellBox.setSpacing(0);
+                ignoreBox.setStyle("-fx-cursor: hand;");
+                cellBox.setStyle("-fx-padding: 4 0 4 0;");
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+
+                ignoreBox.setOnAction(e -> {
+                    Student s = getItem();
+                    if (s == null) return;
+                    if (hostCombo.getValue() != null && s.getCountry().equals(hostCombo.getValue())) {
+                        if (ignoreBox.isSelected()) ignoredHosts.add(s); else ignoredHosts.remove(s);
+                    }
+                    if (guestCombo.getValue() != null && s.getCountry().equals(guestCombo.getValue())) {
+                        if (ignoreBox.isSelected()) ignoredGuests.add(s); else ignoredGuests.remove(s);
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Student s, boolean empty) {
+                super.updateItem(s, empty);
+                if (empty || s == null) {
+                    setGraphic(null);
+                } else {
+                    nameLabel.setText(s.getName() + " " + s.getForename() + " (" + s.getCountry().getFullName() + ")");
+                    nameLabel.setStyle("-fx-text-fill: #222; -fx-font-size: 13px;"); // texte foncé
+                    if (hostCombo.getValue() != null && s.getCountry().equals(hostCombo.getValue()))
+                        ignoreBox.setSelected(ignoredHosts.contains(s));
+                    else if (guestCombo.getValue() != null && s.getCountry().equals(guestCombo.getValue()))
+                        ignoreBox.setSelected(ignoredGuests.contains(s));
+                    else
+                        ignoreBox.setSelected(false);
+                    setGraphic(cellBox);
+                }
+            }
+        });
+
+        // Rafraîchit la liste selon les choix de pays
+        Runnable refreshList = () -> {
+            List<Student> filtered = students.stream()
+                .filter(s -> (hostCombo.getValue() != null && s.getCountry().equals(hostCombo.getValue()))
+                          || (guestCombo.getValue() != null && s.getCountry().equals(guestCombo.getValue())))
+                .collect(Collectors.toList());
+            studentListView.getItems().setAll(filtered);
+        };
+        hostCombo.setOnAction(e -> refreshList.run());
+        guestCombo.setOnAction(e -> refreshList.run());
+        refreshList.run();
+
+        // Bouton valider
         Button validerBtn = new Button("Valider");
         validerBtn.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px;");
         validerBtn.setOnAction(e -> {
@@ -467,15 +549,29 @@ public class MainApp extends Application {
             }
         });
 
-        root.getChildren().addAll(
-            createInfoLabel("Pays qui reçoit :"), hostCombo,
-            createInfoLabel("Pays qui visite :"), guestCombo,
-            createInfoLabel("Algorithme :"), algoCombo,
-            pondLabel,
+        // Ajout de l'en-tête pour l'ignorer
+        Label ignoreHeader = new Label("Cochez la case pour bloquer l'étudiant");
+        ignoreHeader.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
+
+        autoRoot.getChildren().setAll(
+            countryBox,
+            algoBox,
+            ignoreHeader,
+            studentListView,
             validerBtn
         );
+        Tab tabAuto = new Tab("Automatique", autoRoot);
+        tabAuto.setClosable(false);
 
-        Scene scene = new Scene(root, 400, 450);
+        // --- Onglets vides pour la suite ---
+        Tab tabManual = new Tab("Manuelle", new Label("À implémenter"));
+        tabManual.setClosable(false);
+        Tab tabPond = new Tab("Pondération", new Label("À implémenter"));
+        tabPond.setClosable(false);
+
+        tabPane.getTabs().addAll(tabAuto, tabManual, tabPond);
+
+        Scene scene = new Scene(tabPane, 500, 600);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
@@ -602,6 +698,8 @@ public class MainApp extends Application {
                 } else {
                     for (AssociationStudent assoc : assocList) {
                         if (assoc.getHost() == null || assoc.getGuest() == null) continue;
+                        if (assoc.getScoreAssociation() == null) continue; // <-- Ajoute ce filtre ici aussi
+
                         Label label = new Label(
                             assoc.getHost().getName() + " " + assoc.getHost().getForename() +
                             " ⇄ " +
@@ -672,6 +770,7 @@ public class MainApp extends Application {
             .filter(s -> (selectedHost != null && s.getCountry().equals(selectedHost)) ||
                          (selectedGuest != null && s.getCountry().equals(selectedGuest)))
             .filter(s -> !matched.contains(s))
+            .filter(s -> !ignoredHosts.contains(s) && !ignoredGuests.contains(s)) // <-- Ajoute cette ligne
             .toList();
 
         VBox root = new VBox(15);
