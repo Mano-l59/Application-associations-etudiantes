@@ -14,7 +14,7 @@ Télechargez l'archive entière B5, ouvrez un terminal à l'intérieur et execut
 java --module-path <votre_chemin>/javafx-sdk-24.0.1/lib --add-modules javafx.controls,javafx.graphics,javafx.base,javafx.swing -jar ApplicationFinale.jar
 ```
 ---
-
+     
 ## Capture d’écran de l’application finale
 
 ![Capture de l'application](img/screenApp.png)

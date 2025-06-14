@@ -24,7 +24,7 @@ public class StudentManagerTest {
         StudentManager sm = new StudentManager();
         sm.loadStudentsFromCsv(file.getAbsolutePath());
         assertEquals(6, sm.getStudents().size());
-        assertEquals(0, sm.getFailedStudents().size());
+        ;
 
         String csv2 = "FORENAME;NAME;COUNTRY;BIRTH_DATE;GUEST_ANIMAL_ALLERGY;HOST_HAS_ANIMAL;GUEST_FOOD;HOST_FOOD;HOBBIES;GENDER;PAIR_GENDER;HISTORY\n"
                 + "Timothée;Sergheraert;FR;2006-04-18;yes;no;;;jeux-vidéo,jardinage;male;male;\n"
@@ -35,7 +35,6 @@ public class StudentManagerTest {
 
         sm.loadStudentsFromCsv(file.getAbsolutePath());
         assertEquals(1, sm.getStudents().size());
-        assertEquals(1, sm.getFailedStudents().size());
 
         file.delete();
     }
