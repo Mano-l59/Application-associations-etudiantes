@@ -5,7 +5,14 @@
 - **LEMAIRE MAno**
 - **ROTY Clément**
 - **SERGHERAERT Timothée**
+---
+## Comment executer le logiciel
+Téléchargez les dernièrès versions de java et javafx, car l'appli a été developpé en java 23.0.1 et en javafx-sdk-24.0.1
 
+Télechargez l'archive entière B5, ouvrez un terminal à l'intérieur et executer la commande suivante : 
+```
+java --module-path <votre_chemin>/javafx-sdk-24.0.1/lib --add-modules javafx.controls,javafx.graphics,javafx.base,javafx.swing -jar ApplicationFinale.jar
+```
 ---
 
 ## Capture d’écran de l’application finale
