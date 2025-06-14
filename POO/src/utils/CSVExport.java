@@ -23,6 +23,9 @@ public class CSVExport {
         try (PrintWriter pw = new PrintWriter(filePath+".csv")) {
             pw.println("NOM1;PRENOM1;SCORE;NOM2;PRENOM2;DESCRIPTION");
             for (AssociationStudent assoc : associations) {
+                if(assoc.getHost().getId()<0 || assoc.getGuest().getId()<0){
+                    continue; // Ignore les étudiants fictifs
+                }
                 String nom1 = assoc.getHost().getName();
                 String prenom1 = assoc.getHost().getForename();
                 String score;

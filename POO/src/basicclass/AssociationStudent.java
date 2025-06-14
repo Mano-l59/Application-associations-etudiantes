@@ -146,16 +146,16 @@ public class AssociationStudent implements Serializable {
         AffinityWeights w= AffinityWeights.getInstance();
         if(histoResult.equals(HistoryConstraintChecker.result.OTHER)){
             this.setScoreAffinity(w.getHistoryOtherDetected());
-            this.invalidReason = "Association impossible, déjà appariés dans le passé et l'un d'eux ne souhaite pas être apparié à nouveau.";
+            this.invalidReason = "déjà appariés dans le passé et l'un d'eux ne souhaite pas être apparié à nouveau.";
         }else if(HOST.getConstraintsMap().get(Constraints.HOST_HAS_ANIMAL).equals("yes") && GUEST.getConstraintsMap().get(Constraints.GUEST_ANIMAL_ALLERGY).equals("yes")){
             this.setScoreAffinity(w.getAnimalAllergy());
-            this.invalidReason = "Association impossible, l'hôte a un animal et l'invité est allergique.";
+            this.invalidReason = "l'hôte a un animal et l'invité est allergique.";
         }else if (!this.foodCompatibility()){
             this.setScoreAffinity(w.getRegimeRestriction());
-            this.invalidReason = "Association impossible, régime alimentaire incompatible.";
+            this.invalidReason = "régime alimentaire incompatible.";
         }else if(this.laFranceEstReloue()){
             this.setScoreAffinity(w.getFranceRule());
-            this.invalidReason = "Association impossible, l'un des deux est français et ils n'ont pas de hobby en commun.";
+            this.invalidReason = "l'un des deux est français et ont aucun hobby en commun.";
         }else{
             if(histoResult.equals(HistoryConstraintChecker.result.BONUS)){
                 this.setScoreAffinity(w.getBonusHistory());

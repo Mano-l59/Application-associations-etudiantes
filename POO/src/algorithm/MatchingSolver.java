@@ -9,7 +9,6 @@ import org.jgrapht.alg.matching.KuhnMunkresMinimalWeightBipartitePerfectMatching
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * La classe MatchingSolver est responsable de la résolution du problème de matching entre les étudiants hôtes et invités.
@@ -116,28 +115,10 @@ public class MatchingSolver {
                 continue;
             }
             // Ajoute uniquement si l'association est valide (scoreAssociation != null et pas fictif)
-                if(assoc.getScoreAssociation() == null){
-                    this.invalidAssociation.add(assoc);
-                }else{
-                    this.associations.add(assoc);
-                }
-
-        }
-        // Après avoir rempli associations et invalidAssociation
-        Set<Student> matchedHosts = associations.stream().map(AssociationStudent::getHost).collect(Collectors.toSet());
-        Set<Student> matchedGuests = associations.stream().map(AssociationStudent::getGuest).collect(Collectors.toSet());
-
-        List<Student> unmatchedHosts = hosts.stream().filter(h -> !matchedHosts.contains(h)).toList();
-        List<Student> unmatchedGuests = guests.stream().filter(g -> !matchedGuests.contains(g)).toList();
-
-        if (unmatchedHosts.size() == 1 && unmatchedGuests.size() == 1) {
-            Student h = unmatchedHosts.get(0);
-            Student g = unmatchedGuests.get(0);
-            AssociationStudent assoc = new AssociationStudent(h, g);
-            if (assoc.getScoreAssociation() != null) {
-                associations.add(assoc);
-            } else {
-                invalidAssociation.add(assoc);
+            if(assoc.getScoreAssociation() == null || assoc.getHost().getId() == -999 || assoc.getGuest().getId() == -999){
+                this.invalidAssociation.add(assoc);
+            }else{
+                this.associations.add(assoc);
             }
         }
         return this.associations;
