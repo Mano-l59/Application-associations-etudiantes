@@ -17,7 +17,7 @@ java --module-path <votre_chemin>/javafx-sdk-24.0.1/lib --add-modules javafx.con
      
 ## Capture d’écran de l’application finale
 
-![Capture de l'application](img/screenApp.png)
+![Capture de l'application](renduIHM/Rapport/img/screenApp.png)
 
 ---
 
@@ -66,6 +66,6 @@ java --module-path <votre_chemin>/javafx-sdk-24.0.1/lib --add-modules javafx.con
 
 ---
 
-Non réalisée
+Disponible à la racine du dépôt
 
 ---
