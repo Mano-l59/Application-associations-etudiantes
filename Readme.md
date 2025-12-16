@@ -2,7 +2,7 @@
 
 ## Membres du groupe
 
-- **LEMAIRE MAno**
+- **LEMAIRE Mano**
 - **ROTY Clément**
 - **SERGHERAERT Timothée**
 ---
